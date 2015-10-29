@@ -1,0 +1,20 @@
+{
+    "name": "folderHash",
+    "version": "1.0.0",
+    "description": "Create a hash checksum over a folder and its content - its children and their content",
+    "main": "index.js",
+    "author": {
+        "name": "Marc Walter",
+        "email": "walter.marc@outlook.com"
+    },
+    "license": "MIT",
+    "dependencies": {
+        "q": "^1.4.1"
+    },
+    "devDependencies": {
+        "chai": "^3.4.0",
+        "chai-as-promised": "^5.1.0",
+        "mocha": "^2.3.3",
+        "rimraf": "^2.4.3"
+    }
+}
