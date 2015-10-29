@@ -3,6 +3,9 @@
     "version": "1.0.0",
     "description": "Create a hash checksum over a folder and its content - its children and their content",
     "main": "index.js",
+    "scripts": {
+        "test": "mocha --reporter spec test"
+    },
     "author": {
         "name": "Marc Walter",
         "email": "walter.marc@outlook.com"
