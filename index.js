@@ -11,12 +11,41 @@ var algo = 'sha1';
 var encoding = 'base64'; // 'base64', 'hex' or 'binary'
 
 module.exports = {
-    hashElement: hashElement/** /,
+    hashElement: createHash/** /,
     hashFolderPromise: hashFolderPromise,
     hashFilePromise: hashFilePromise/**/
 }
 
-function hashElement(name, directoryPath, callback) {
+/**
+ * Create a hash over a folder or file, using either promises or error-first-callbacks.
+ * The parameter directoryPath is optional. This function may be called 
+ *  as createHash(filename, folderpath, fn(err, hash) {}), createHash(filename, folderpath) 
+ *  or as createHash(path, fn(err, hash) {}), createHash(path)
+ */
+function createHash(name, directoryPath, callback) {
+    function isString(str) {
+        return (typeof str == 'string' || str instanceof String)
+    }
+    
+    return Promise(function (resolve, reject, notify) {
+        
+        if (!isString(name)) {
+            reject(new TypeError('First argument must be a string'));
+        }
+        if (!isString(directoryPath)) {
+            if (typeof directoryPath === 'function') {
+                callback = directoryPath;
+            }
+            
+            directoryPath = path.dirname(name);
+            name = path.basename(name);
+        }
+        
+        resolve(hashElementPromise(name, directoryPath, callback));
+    }).nodeify(callback);
+}
+
+function hashElementPromise(name, directoryPath) {
     var filepath = path.join(directoryPath, name);
     return Promise(function (resolve, reject, notify) {
         fs.stat(filepath, function (err, stats) {
@@ -32,8 +61,7 @@ function hashElement(name, directoryPath, callback) {
                 resolve({ name: name, hash: 'unknown element type' });
             }
         });
-    })
-    .nodeify(callback);;
+    });
 }
 
 
@@ -51,7 +79,7 @@ function hashFolderPromise(foldername, directoryPath) {
             console.log(TAG + 'children:', files);
             
             var children = files.map(function (child) {
-                return hashElement(child, folderPath);
+                return hashElementPromise(child, folderPath);
             });
             
             var allChildren = Q.all(children);

@@ -4,6 +4,7 @@
     "description": "Create a hash checksum over a folder and its content - its children and their content",
     "main": "index.js",
     "scripts": {
+        "start": "node sample.js",
         "test": "mocha --reporter spec test"
     },
     "author": {
