@@ -69,14 +69,11 @@ function hashFolderPromise(foldername, directoryPath) {
     var TAG = 'hashFolderPromise(' + foldername + ', ' + directoryPath + '):';
     var folderPath = path.join(directoryPath, foldername);
     return Promise(function (resolve, reject, notify) {
-        console.log(TAG);
         fs.readdir(folderPath, function (err, files) {
             if (err) {
                 console.error(TAG, err);
                 reject(err);
             }
-            
-            console.log(TAG + 'children:', files);
             
             var children = files.map(function (child) {
                 return hashElementPromise(child, folderPath);
