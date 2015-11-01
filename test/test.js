@@ -16,43 +16,38 @@ chai.should();
 
 
 var sampleFolder = 'sample-folder';
-
-/**
- * structure created:
- * sample-folder
- * - file1
- * - file2
- * - subfolder1
- *   - file1
- *   - file2
- * - f2
- *   - afile
- *   - subfolder1
- *     - file1
- *     - file2
- */
-
-
-
-// two files with same name and same content should have the same hash
-// two folders with same name and same content should have the same hash
-// two 
-
 before(helper.createTestFolderStructure(sampleFolder));
 
-
 describe('Should generate hashes', function () {
-    it('when called as a promise', function () {
-        return folderHash.hashElement('file1', sampleFolder).should.eventually.have.property('hash');
+    describe('when called as a promise', function () {
+        it('with element and folder passed as two strings', function () {
+            return folderHash.hashElement('file1', sampleFolder).should.eventually.have.property('hash');
+        });
+
+        it('with element path passed as one string', function () {
+            return folderHash.hashElement(path.join(sampleFolder, 'file1')).should.eventually.have.property('hash');
+        });
     });
     
-    it('when executed with an error-first callback', function (done) {
-        folderHash.hashElement('file1', sampleFolder, function (err, hash) {
-            if (err) throw err;
-            else {
-                assert.ok(hash.hash);
-                done();
-            }
+    describe('when executed with an error-first callback', function () {
+        it('with element and folder passed as two strings', function (done) {
+            folderHash.hashElement('file1', sampleFolder, function (err, hash) {
+                if (err) throw err;
+                else {
+                    assert.ok(hash.hash);
+                    done();
+                }
+            });
+        });
+        
+        it('with element path passed as one string', function (done) {
+            folderHash.hashElement(path.join(sampleFolder, 'file1'), function (err, hash) {
+                if (err) throw err;
+                else {
+                    assert.ok(hash.hash);
+                    done();
+                }
+            });
         });
     });
 });

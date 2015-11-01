@@ -10,10 +10,10 @@ console.log('Known hash algorithms: ', '\'' + crypto.getHashes().join('\', \'') 
 
 function checkPromise(promise) {
     promise.then(function (result) {
-        console.log('Promise resolved:', result, '\n\n');
+        console.log('Promise resolved:\n', result.toString(), '\n\n');
     },
     function (reason) {
-        console.error('Promise rejected due to:', reason, '\n\n');
+        console.error('Promise rejected due to:\n', reason, '\n\n');
     });
 }
 
@@ -25,5 +25,5 @@ console.log('\nCreate a hash over a single file:');
 checkPromise(hashFile.hashElement(file, dir));
 
 console.log('Create hash over a folder:');
-checkPromise(hashFile.hashElement(path.basename(dir), path.dirname(dir)));
-
+//checkPromise(hashFile.hashElement(path.basename(dir), path.dirname(dir)));
+checkPromise(hashFile.hashElement('test', dir));

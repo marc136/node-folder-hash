@@ -82,18 +82,8 @@ function hashFolderPromise(foldername, directoryPath) {
             var allChildren = Q.all(children);
             
             return allChildren.then(function (children) {
-                
-                var hash = crypto.createHash(algo);
-                hash.write(foldername);
-                children.forEach(function (child) {
-                    if (child.hash) {
-                        hash.write(child.hash);
-                    }
-                });
-
-                var checksum = hash.digest(encoding);
-                
-                resolve({ name: foldername, hash: checksum, children: children });
+                var hash = new HashedFolder(foldername, children);
+                resolve(hash);
             });
         });
     });
@@ -110,16 +100,54 @@ function hashFilePromise(filename, directoryPath) {
             f.pipe(hash, { end: false });
             
             f.on('end', function () {
-                var result = hash.digest(encoding);
-                
-                resolve({
-                    name: filename,
-                    hash: result
-                });
+                var hashedFile = new HashedFile(filename, hash);
+                resolve(hashedFile);
             });
 
         } catch (ex) {
             reject(ex);
         }
     });
+}
+
+
+var HashedFolder = function (name, children) {
+    this.name = name;
+    this.children = children;
+    
+    var hash = crypto.createHash(algo);
+    hash.write(name);
+    children.forEach(function (child) {
+        if (child.hash) {
+            hash.write(child.hash);
+        }
+    });
+    
+    this.hash = hash.digest(encoding);
+}
+
+HashedFolder.prototype.toString = function (padding) {
+    if (typeof padding === 'undefined') padding = "";
+    var str = padding + '{ name: \'' + this.name + '\', hash: \'' + this.hash + '\'\n';
+    padding += '  ';
+    str += padding + 'children: ';
+    if (this.children.length === 0) {
+        str += '[]';
+    } else {
+        let nextPadding = padding + "  ";
+        let childElements = this.children.map(function (child) { return child.toString(nextPadding); });
+        str += '[\n' + childElements.join('\n') + '\n' + padding + ']';
+    }
+
+    return str + ' }';
+}
+
+var HashedFile = function (name, hash) {
+    this.name = name;
+    this.hash = hash.digest(encoding);
+}
+
+HashedFile.prototype.toString = function (padding) {
+    if (typeof padding === 'undefined') padding = "";
+    return padding + '{ name: \'' + this.name + '\', hash: \'' + this.hash + '\' }';
 }
