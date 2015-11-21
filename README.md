@@ -1,6 +1,6 @@
-﻿# folderHash
+﻿# folderHash 
 
-## Description
+## Description 
 Create a hash checksum over a folder or a file.  
 The hashes are propagated upwards, the hash that is returned for a folder is generated over all the hashes of its children.  
 The hashes are generated with the _sha1_ algorithm and returned in _base64_ encoding.
@@ -21,12 +21,12 @@ The returned information looks like this:
 
 Each file returns a name and a hash, and each folder returns additionally an array of children (file or folder elements).  
 
-## Usage
+## Usage 
 First, install the dependencies by executing `npm install`.  
 
-### With promises
+### With promises  
 
-    var hasher = require('folderHash');
+    var hasher = require('folder-hash');
     // pass element name and folder path separately
     hasher.hashElement('node_modules', __dirname).then(function (hash) {
         console.log('Result for folder "node_modules" in directory "' + __dirname + '":');
@@ -40,7 +40,7 @@ First, install the dependencies by executing `npm install`.
 
 ### With callbacks
 
-    var hasher = require('folderHash');
+    var hasher = require('folder-hash');
     // pass element name and folder path separately
     hasher.hashElement('node_modules', __dirname, function (error, hash)) {
         if (error) return console.error('hashing failed:', error);
