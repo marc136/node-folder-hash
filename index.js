@@ -134,8 +134,8 @@ HashedFolder.prototype.toString = function (padding) {
     if (this.children.length === 0) {
         str += '[]';
     } else {
-        let nextPadding = padding + "  ";
-        let childElements = this.children.map(function (child) { return child.toString(nextPadding); });
+        var nextPadding = padding + "  ";
+        var childElements = this.children.map(function (child) { return child.toString(nextPadding); });
         str += '[\n' + childElements.join('\n') + '\n' + padding + ']';
     }
 
