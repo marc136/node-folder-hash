@@ -1,11 +1,11 @@
 ﻿
+if (typeof Promise === 'undefined') require('when/es6-shim/Promise');
 var folderHash = require('../index');
 
 var helper = require('./helper/helper.js');
 
 var fs = require('fs');
 var path = require('path');
-var Q = require('q');
 
 var assert = require('assert');
 var chai = require('chai');
@@ -28,7 +28,7 @@ describe('Should generate hashes', function () {
             return folderHash.hashElement(path.join(sampleFolder, 'file1')).should.eventually.have.property('hash');
         });
     });
-    
+
     describe('when executed with an error-first callback', function () {
         it('with element and folder passed as two strings', function (done) {
             folderHash.hashElement('file1', sampleFolder, function (err, hash) {
@@ -39,7 +39,7 @@ describe('Should generate hashes', function () {
                 }
             });
         });
-        
+
         it('with element path passed as one string', function (done) {
             folderHash.hashElement(path.join(sampleFolder, 'file1'), function (err, hash) {
                 if (err) throw err;
@@ -55,25 +55,24 @@ describe('Should generate hashes', function () {
 
 describe('Generating hashes over files, it', function () {
     var hash1;
-    before(function (done) {
+    before(function () {
         return folderHash.hashElement('file1', sampleFolder).then(function (hash) {
             hash1 = hash;
-            done();
         });
     });
-    
+
     it('should return the same hash if a file was not changed', function () {
         return folderHash.hashElement('file1', sampleFolder).then(function (hash2) {
             return assert.equal(hash1.hash, hash2.hash);
         });
     });
-    
+
     it('should return the same hash if a file has the same name and content, but exists in a different folder', function () {
         return folderHash.hashElement('file1', path.join(sampleFolder, 'subfolder1')).then(function (hash2) {
             return assert.equal(hash1.hash, hash2.hash);
         });
     });
-    
+
     it('should return a different hash if the file has the same name but a different content', function () {
         return folderHash.hashElement('file1', path.join(sampleFolder, 'f2')).then(function (hash2) {
             return assert.notEqual(hash1.hash, hash2.hash);
@@ -94,24 +93,24 @@ describe('Generating a hash over a folder, it', function () {
             hash.children.forEach(recAssertHash);
         }
     }
-    
+
     it('generates a hash over the folder name and over the combination hashes of all its children', function () {
         return folderHash.hashElement('f2', sampleFolder).then(recAssertHash);
     });
-    
+
     it('generates different hashes if the folders have the same content but different names', function () {
-        return Q.all([
-            folderHash.hashElement('subfolder2', path.join(sampleFolder, 'f2')), 
+        return Promise.all([
+            folderHash.hashElement('subfolder2', path.join(sampleFolder, 'f2')),
             folderHash.hashElement('subfolder1', sampleFolder)
         ]).then(function (hashes) {
             assert.ok(hashes.length > 1, 'should have returned at least two hashes');
             assert.notEqual(hashes[0].hash, hashes[1].hash);
         });
     });
-    
+
     it('generates different hashes if the folders have the same name but different content (one file content changed)', function () {
-        return Q.all([
-            folderHash.hashElement('subfolder1', path.join(sampleFolder, 'f3')), 
+        return Promise.all([
+            folderHash.hashElement('subfolder1', path.join(sampleFolder, 'f3')),
             folderHash.hashElement('subfolder1', sampleFolder)
         ]).then(function (hashes) {
             assert.ok(hashes.length > 1, 'should have returned at least two hashes');
@@ -120,8 +119,8 @@ describe('Generating a hash over a folder, it', function () {
     });
 
     it('generates the same hash if the folders have the same name and the same content', function () {
-        return Q.all([
-            folderHash.hashElement('subfolder1', path.join(sampleFolder, 'f2')), 
+        return Promise.all([
+            folderHash.hashElement('subfolder1', path.join(sampleFolder, 'f2')),
             folderHash.hashElement('subfolder1', sampleFolder)
         ]).then(function (hashes) {
             assert.ok(hashes.length > 1, 'should have returned at least two hashes');

@@ -1,28 +1,28 @@
 {
-    "name": "folder-hash",
-    "version": "1.0.3",
-    "description": "Create a hash checksum over a folder and its content - its children and their content",
-    "main": "index.js",
-    "scripts": {
-        "start": "node sample.js",
-        "test": "mocha --reporter spec test"
-    },
-    "author": {
-        "name": "Marc Walter",
-        "email": "walter.marc@outlook.com"
-    },
-    "license": "MIT",
-    "repository" : { 
-        "type" : "git",
-        "url" : "https://github.com/marc136/node-folder-hash.git"
-    },
-    "dependencies": {
-        "q": "^1.4.1"
-    },
-    "devDependencies": {
-        "chai": "^3.4.0",
-        "chai-as-promised": "^5.1.0",
-        "mocha": "^2.3.3",
-        "rimraf": "^2.4.3"
-    }
+  "name": "folder-hash",
+  "version": "1.0.4",
+  "description": "Create a hash checksum over a folder and its content - its children and their content",
+  "main": "index.js",
+  "scripts": {
+    "start": "node sample.js",
+    "test": "mocha --reporter spec test"
+  },
+  "author": {
+    "name": "Marc Walter",
+    "email": "walter.marc@outlook.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/marc136/node-folder-hash.git"
+  },
+  "dependencies": {
+    "when": "^3.7.7"
+  },
+  "devDependencies": {
+    "chai": "^3.4.0",
+    "chai-as-promised": "^5.1.0",
+    "mocha": "^2.3.3",
+    "rimraf": "^2.4.3"
+  }
 }
