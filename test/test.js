@@ -14,9 +14,15 @@ var chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
 chai.should();
 
-
 var sampleFolder = 'sample-folder';
 before(helper.createTestFolderStructure(sampleFolder));
+
+describe('Initialization', function () {
+    it('should throw an error if no name was passed', function () {
+        folderHash.hashElement().should.be.rejectedWith(TypeError);
+    });
+});
+
 
 describe('Should generate hashes', function () {
     describe('when called as a promise', function () {

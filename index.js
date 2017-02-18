@@ -20,23 +20,9 @@ module.exports = {
  *  or as createHash(path, fn(err, hash) {}), createHash(path)
  */
 function createHash(name, directoryPath, callback) {
-    var promise;
-    
-    if (!isString(name)) {
-        promise = Promise.reject(new TypeError('First argument must be a string'));
-    }
-    
-    if (!isString(directoryPath)) {
-        if (typeof directoryPath === 'function') {
-            callback = directoryPath;
-        }
+    var promise = parseParameters(name, directoryPath);
+    var callback = arguments[arguments.length-1];
 
-        directoryPath = path.dirname(name);
-        name = path.basename(name);
-    }
-
-    promise = hashElementPromise(name, directoryPath, callback);
-    
     return promise
     .then(function (result) { 
         if (typeof callback === 'function') return callback(undefined, result);
@@ -46,6 +32,19 @@ function createHash(name, directoryPath, callback) {
         if (typeof callback === 'function') return callback(reason);
         throw reason;
     });
+}
+
+function parseParameters(name, directoryPath) {
+    if (!isString(name)) {
+        return Promise.reject(new TypeError('First argument must be a string'));
+    }
+
+    if (!isString(directoryPath)) {
+        directoryPath = path.dirname(name);
+        name = path.basename(name);
+    }
+
+    return hashElementPromise(name, directoryPath);
 }
 
 function hashElementPromise(name, directoryPath) {
