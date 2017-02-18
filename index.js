@@ -6,8 +6,10 @@ var crypto = require('crypto');
 
 if (typeof Promise === 'undefined') require('when/es6-shim/Promise');
 
-var algo = 'sha1';
-var encoding = 'base64'; // 'base64', 'hex' or 'binary'
+var defaultOptions = {
+    algo: 'sha1',       // see crypto.getHashes() for options
+    encoding: 'base64', // 'base64', 'hex' or 'binary'
+};
 
 module.exports = {
     hashElement: createHash
@@ -19,8 +21,8 @@ module.exports = {
  *  as createHash(filename, folderpath, fn(err, hash) {}), createHash(filename, folderpath)
  *  or as createHash(path, fn(err, hash) {}), createHash(path)
  */
-function createHash(name, directoryPath, callback) {
-    var promise = parseParameters(name, directoryPath);
+function createHash(name, directoryPath, options, callback) {
+    var promise = parseParameters(arguments);
     var callback = arguments[arguments.length-1];
 
     return promise
@@ -34,21 +36,32 @@ function createHash(name, directoryPath, callback) {
     });
 }
 
-function parseParameters(name, directoryPath) {
-    if (!isString(name)) {
+function parseParameters(args) {
+    var elementBasename = args[0],
+        elementDirname = args[1],
+        options = args[2];
+
+    if (!isString(elementBasename)) {
         return Promise.reject(new TypeError('First argument must be a string'));
     }
 
-    if (!isString(directoryPath)) {
-        directoryPath = path.dirname(name);
-        name = path.basename(name);
+    if (!isString(elementDirname)) {
+        elementDirname = path.dirname(elementBasename);
+        elementBasename = path.basename(elementBasename);
+        options = args[1];
     }
 
-    return hashElementPromise(name, directoryPath);
+    // parse options (fallback default options)
+    if (!isObject(options)) options = {};
+    ['algo', 'encoding', 'excludes'].forEach(function(key) {
+        if (!options.hasOwnProperty(key)) options[key] = defaultOptions[key];
+    });
+
+    return hashElementPromise(elementBasename, elementDirname, options);
 }
 
-function hashElementPromise(name, directoryPath) {
-    var filepath = path.join(directoryPath, name);
+function hashElementPromise(basename, dirname, options) {
+    var filepath = path.join(dirname, basename);
     return new Promise(function (resolve, reject, notify) {
         fs.stat(filepath, function (err, stats) {
             if (err) {
@@ -56,18 +69,18 @@ function hashElementPromise(name, directoryPath) {
             }
 
             if (stats.isDirectory()) {
-                resolve(hashFolderPromise(name, directoryPath));
+                resolve(hashFolderPromise(basename, dirname, options));
             } else if (stats.isFile()) {
-                resolve(hashFilePromise(name, directoryPath));
+                resolve(hashFilePromise(basename, dirname, options));
             } else {
-                resolve({ name: name, hash: 'unknown element type' });
+                resolve({ name: basename, hash: 'unknown element type' });
             }
         });
     });
 }
 
 
-function hashFolderPromise(foldername, directoryPath) {
+function hashFolderPromise(foldername, directoryPath, options) {
     var TAG = 'hashFolderPromise(' + foldername + ', ' + directoryPath + '):';
     var folderPath = path.join(directoryPath, foldername);
     return new Promise(function (resolve, reject, notify) {
@@ -78,13 +91,13 @@ function hashFolderPromise(foldername, directoryPath) {
             }
 
             var children = files.map(function (child) {
-                return hashElementPromise(child, folderPath);
+                return hashElementPromise(child, folderPath, options);
             });
 
             var allChildren = Promise.all(children);
 
             return allChildren.then(function (children) {
-                var hash = new HashedFolder(foldername, children);
+                var hash = new HashedFolder(foldername, children, options);
                 resolve(hash);
             });
         });
@@ -92,17 +105,17 @@ function hashFolderPromise(foldername, directoryPath) {
 }
 
 
-function hashFilePromise(filename, directoryPath) {
+function hashFilePromise(filename, directoryPath, options) {
     return new Promise(function (resolve, reject, notify) {
         try {
-            var hash = crypto.createHash(algo);
+            var hash = crypto.createHash(options.algo);
             hash.write(filename);
 
             var f = fs.createReadStream(path.join(directoryPath, filename));
             f.pipe(hash, { end: false });
 
             f.on('end', function () {
-                var hashedFile = new HashedFile(filename, hash);
+                var hashedFile = new HashedFile(filename, hash, options);
                 resolve(hashedFile);
             });
 
@@ -113,11 +126,11 @@ function hashFilePromise(filename, directoryPath) {
 }
 
 
-var HashedFolder = function (name, children) {
+var HashedFolder = function (name, children, options) {
     this.name = name;
     this.children = children;
 
-    var hash = crypto.createHash(algo);
+    var hash = crypto.createHash(options.algo);
     hash.write(name);
     children.forEach(function (child) {
         if (child.hash) {
@@ -125,7 +138,7 @@ var HashedFolder = function (name, children) {
         }
     });
 
-    this.hash = hash.digest(encoding);
+    this.hash = hash.digest(options.encoding);
 }
 
 HashedFolder.prototype.toString = function (padding) {
@@ -145,9 +158,9 @@ HashedFolder.prototype.toString = function (padding) {
 }
 
 
-var HashedFile = function (name, hash) {
+var HashedFile = function (name, hash, options) {
     this.name = name;
-    this.hash = hash.digest(encoding);
+    this.hash = hash.digest(options.encoding);
 }
 
 HashedFile.prototype.toString = function (padding) {
@@ -158,4 +171,8 @@ HashedFile.prototype.toString = function (padding) {
 
 function isString(str) {
     return (typeof str == 'string' || str instanceof String)
+}
+
+function isObject(obj) {
+    return obj != null && typeof obj === 'object'
 }
