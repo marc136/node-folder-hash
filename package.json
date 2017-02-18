@@ -1,6 +1,6 @@
 {
   "name": "folder-hash",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Create a hash checksum over a folder and its content - its children and their content",
   "main": "index.js",
   "scripts": {
@@ -21,8 +21,8 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
-    "chai-as-promised": "^5.2.0",
-    "mocha": "^2.4.5",
+    "chai-as-promised": "^6.0.0",
+    "mocha": "^3.2.0",
     "rimraf": "^2.5.2"
   }
 }
