@@ -5,15 +5,12 @@ var path = require('path');
 var crypto = require('crypto');
 
 if (typeof Promise === 'undefined') require('when/es6-shim/Promise');
-//Promise = require('when').Promise;
 
 var algo = 'sha1';
 var encoding = 'base64'; // 'base64', 'hex' or 'binary'
 
 module.exports = {
-    hashElement: createHash/** /,
-    hashFolderPromise: hashFolderPromise,
-    hashFilePromise: hashFilePromise/**/
+    hashElement: createHash
 }
 
 /**
@@ -23,10 +20,6 @@ module.exports = {
  *  or as createHash(path, fn(err, hash) {}), createHash(path)
  */
 function createHash(name, directoryPath, callback) {
-    function isString(str) {
-        return (typeof str == 'string' || str instanceof String)
-    }
-    
     var promise;
     
     if (!isString(name)) {
@@ -152,6 +145,7 @@ HashedFolder.prototype.toString = function (padding) {
     return str + ' }';
 }
 
+
 var HashedFile = function (name, hash) {
     this.name = name;
     this.hash = hash.digest(encoding);
@@ -160,4 +154,9 @@ var HashedFile = function (name, hash) {
 HashedFile.prototype.toString = function (padding) {
     if (typeof padding === 'undefined') padding = "";
     return padding + '{ name: \'' + this.name + '\', hash: \'' + this.hash + '\' }';
+}
+
+
+function isString(str) {
+    return (typeof str == 'string' || str instanceof String)
 }
