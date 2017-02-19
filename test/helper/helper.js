@@ -53,6 +53,8 @@ function createTestFolderStructure(sampleFolder) {
             mkdirSync(path.join(sampleFolder, 'f3'));
             dummyFolder(path.join(sampleFolder, 'f3', 'subfolder1'))
             writeFileSync(path.join(sampleFolder, 'f3', 'subfolder1', 'file1'), 'This is another text');
+
+            mkdirSync(path.join(sampleFolder, 'empty'));
             done();
         });
     }

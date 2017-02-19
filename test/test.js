@@ -20,6 +20,7 @@ before(helper.createTestFolderStructure(sampleFolder));
 describe('Initialization', function () {
     it('should throw an error if no name was passed', function () {
         folderHash.hashElement().should.be.rejectedWith(TypeError);
+        folderHash.hashElement(function () {}).should.be.rejectedWith(TypeError);
     });
 });
 
@@ -32,6 +33,20 @@ describe('Should generate hashes', function () {
 
         it('with element path passed as one string', function () {
             return folderHash.hashElement(path.join(sampleFolder, 'file1')).should.eventually.have.property('hash');
+        });
+
+        it('with options passed', function () {
+            var options = {
+                algo: 'sha1',
+                encoding: 'base64',
+                excludes: [],
+                match: {
+                    basename: false,
+                    path: false
+                }
+            };
+            return folderHash.hashElement('file1', sampleFolder, options)//.should.eventually.have.property('hash');
+            .then((a) => console.log('a:', a)).catch(b => console.error('b', b));
         });
     });
 
@@ -54,6 +69,17 @@ describe('Should generate hashes', function () {
                     done();
                 }
             });
+        });
+    });
+
+    describe('and', function () {
+        it('should return a string representation', function () {
+            folderHash.hashElement('./', sampleFolder)
+            .then(function (hash) {
+                var str = hash.toString();
+                assert.ok(str);
+                assert.ok(str.length > 10);
+            })
         });
     });
 });
@@ -132,5 +158,15 @@ describe('Generating a hash over a folder, it', function () {
             assert.ok(hashes.length > 1, 'should have returned at least two hashes');
             assert.equal(hashes[0].hash, hashes[1].hash);
         });
+    });
+
+    it('f2/subfolder1 should equal f3/subfolder1 if file1 is ignored', function () {
+        return Promise.all([
+            folderHash.hashElement(path.join(sampleFolder, 'f3/subfolder1'), { excludes: ['**/.*', 'file1'] }),
+            folderHash.hashElement(path.join(sampleFolder, 'f2/subfolder1'), { excludes: ['**/.*', 'file1'] })
+        ]).then(function (hashes) {
+            assert.ok(hashes.length == 2, 'should have returned two hashes');
+            assert.equal(hashes[0].hash, hashes[1].hash);
+        })
     });
 });
