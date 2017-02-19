@@ -1,2 +1,4 @@
 node_modules
 sample-folder
+out/**
+test_coverage/**

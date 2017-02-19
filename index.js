@@ -36,6 +36,7 @@ module.exports = {
  * @param {string[]} [options.excludes=[]] - Array of optional exclude file glob patterns, see minimatch doc
  * @param {bool} [options.match.basename=true] - Match the exclude patterns to the file/folder name
  * @param {bool} [options.match.path=true] - Match the exclude patterns to the file/folder path
+ * @param {fn} [callback] - Error-first callback function
  */
 function hashElement(name, directoryPath, options, callback) {
     var promise = parseParameters(arguments);

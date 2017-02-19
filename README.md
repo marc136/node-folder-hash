@@ -37,6 +37,14 @@ First, install the dependencies by executing `npm install`.
         console.log('Result for folder "' + __dirname + '":');
         console.log(hash.toString());
     });
+    // pass options (example: exclude dotFiles)
+    var options = { excludes: ['.*'], match: { basename: true, path: false } };
+    hasher.hashElement(__dirname, options, function (error, hash)) {
+        if (error) return console.error('hashing failed:', error);
+        console.log('Result for folder "' + __dirname + '":');
+        console.log(hash.toString());
+    });
+
 
 ### With callbacks
 
@@ -53,6 +61,150 @@ First, install the dependencies by executing `npm install`.
         console.log('Result for folder "' + __dirname + '":');
         console.log(hash.toString());
     });
+    // pass options (example: exclude dotFiles)
+    var options = { excludes: ['**/.*'], match: { basename: false, path: true } };
+    hasher.hashElement(__dirname, options, function (error, hash)) {
+        if (error) return console.error('hashing failed:', error);
+        console.log('Result for folder "' + __dirname + '":');
+        console.log(hash.toString());
+    });
+
+
+### Parameters for the hashElement function
+
+<table class="params">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Attributes</th>
+            <th class="last">Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="name"><code>name</code></td>
+            <td class="type">
+                <span class="param-type">string</span>
+            </td>
+            <td class="attributes">
+            </td>
+            <td class="description last">element name or an element's path</td>
+        </tr>
+        <tr>
+            <td class="name"><code>dir</code></td>
+            <td class="type">
+                <span class="param-type">string</span>
+            </td>
+            <td class="attributes">
+                &lt;optional&gt;<br>
+            </td>
+            <td class="description last">directory that contains the element (if omitted is generated from name)</td>
+        </tr>
+        <tr>
+            <td class="name"><code>options</code></td>
+            <td class="type">
+                <span class="param-type">Object</span>
+            </td>
+            <td class="attributes">
+                &lt;optional&gt;<br>
+            </td>
+            <td class="description last">
+                Options object (see below)
+            </td>
+        </tr>
+        <tr>
+            <td class="name"><code>callback</code></td>
+            <td class="type">
+                <span class="param-type">fn</span>
+            </td>
+            <td class="attributes">
+                &lt;optional&gt;<br>
+            </td>
+            <td class="description last">Error-first callback function</td>
+        </tr>
+    </tbody>
+</table>
+
+#### Options object properties
+<table class="params">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Attributes</th>
+            <th>Default</th>
+            <th class="last">Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="name"><code>algo</code></td>
+            <td class="type">
+                <span class="param-type">string</span>
+            </td>
+            <td class="attributes">
+                &lt;optional&gt;<br>
+            </td>
+            <td class="default">
+                'sha1'
+            </td>
+            <td class="description last">checksum algorithm, see options in crypto.getHashes()</td>
+        </tr>
+        <tr>
+            <td class="name"><code>encoding</code></td>
+            <td class="type">
+                <span class="param-type">string</span>
+            </td>
+            <td class="attributes">
+                &lt;optional&gt;<br>
+            </td>
+            <td class="default">
+                'base64'
+            </td>
+            <td class="description last">encoding of the resulting hash. One of 'base64', 'hex' or 'binary'</td>
+        </tr>
+        <tr>
+            <td class="name"><code>excludes</code></td>
+            <td class="type">
+                <span class="param-type">Array.&lt;string&gt;</span>
+            </td>
+            <td class="attributes">
+                &lt;optional&gt;<br>
+            </td>
+            <td class="default">
+                []
+            </td>
+            <td class="description last">Array of optional exclude file glob patterns, see minimatch doc</td>
+        </tr>
+        <tr>
+            <td class="name"><code>match.basename</code></td>
+            <td class="type">
+                <span class="param-type">bool</span>
+            </td>
+            <td class="attributes">
+                &lt;optional&gt;<br>
+            </td>
+            <td class="default">
+                true
+            </td>
+            <td class="description last">Match the exclude patterns to the file/folder name</td>
+        </tr>
+        <tr>
+            <td class="name"><code>match.path</code></td>
+            <td class="type">
+                <span class="param-type">bool</span>
+            </td>
+            <td class="attributes">
+                &lt;optional&gt;<br>
+            </td>
+            <td class="default">
+                true
+            </td>
+            <td class="description last">Match the exclude patterns to the file/folder path</td>
+        </tr>
+    </tbody>
+</table>
 
 
 ## Behavior
