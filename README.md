@@ -72,136 +72,136 @@ First, install the dependencies by executing `npm install`.
 
 ### Parameters for the hashElement function
 
-<table class="params">
+<table>
     <thead>
         <tr>
             <th>Name</th>
             <th>Type</th>
             <th>Attributes</th>
-            <th class="last">Description</th>
+            <th>Description</th>
         </tr>
     </thead>
     <tbody>
         <tr>
-            <td class="name"><code>name</code></td>
-            <td class="type">
-                <span class="param-type">string</span>
+            <td>name</td>
+            <td>
+                <span>string</span>
             </td>
-            <td class="attributes">
+            <td>
             </td>
-            <td class="description last">element name or an element's path</td>
+            <td>element name or an element's path</td>
         </tr>
         <tr>
-            <td class="name"><code>dir</code></td>
-            <td class="type">
-                <span class="param-type">string</span>
+            <td>dir</td>
+            <td>
+                <span>string</span>
             </td>
-            <td class="attributes">
+            <td>
                 &lt;optional&gt;<br>
             </td>
-            <td class="description last">directory that contains the element (if omitted is generated from name)</td>
+            <td>directory that contains the element (if omitted is generated from name)</td>
         </tr>
         <tr>
-            <td class="name"><code>options</code></td>
-            <td class="type">
-                <span class="param-type">Object</span>
+            <td>options</td>
+            <td>
+                <span>Object</span>
             </td>
-            <td class="attributes">
+            <td>
                 &lt;optional&gt;<br>
             </td>
-            <td class="description last">
+            <td>
                 Options object (see below)
             </td>
         </tr>
         <tr>
-            <td class="name"><code>callback</code></td>
-            <td class="type">
-                <span class="param-type">fn</span>
+            <td>callback</td>
+            <td>
+                <span>fn</span>
             </td>
-            <td class="attributes">
+            <td>
                 &lt;optional&gt;<br>
             </td>
-            <td class="description last">Error-first callback function</td>
+            <td>Error-first callback function</td>
         </tr>
     </tbody>
 </table>
 
 #### Options object properties
-<table class="params">
+<table>
     <thead>
         <tr>
             <th>Name</th>
             <th>Type</th>
             <th>Attributes</th>
             <th>Default</th>
-            <th class="last">Description</th>
+            <th>Description</th>
         </tr>
     </thead>
     <tbody>
         <tr>
-            <td class="name"><code>algo</code></td>
-            <td class="type">
-                <span class="param-type">string</span>
+            <td>algo</td>
+            <td>
+                <span>string</span>
             </td>
-            <td class="attributes">
+            <td>
                 &lt;optional&gt;<br>
             </td>
-            <td class="default">
+            <td>
                 'sha1'
             </td>
-            <td class="description last">checksum algorithm, see options in crypto.getHashes()</td>
+            <td>checksum algorithm, see options in crypto.getHashes()</td>
         </tr>
         <tr>
-            <td class="name"><code>encoding</code></td>
-            <td class="type">
-                <span class="param-type">string</span>
+            <td>encoding</td>
+            <td>
+                <span>string</span>
             </td>
-            <td class="attributes">
+            <td>
                 &lt;optional&gt;<br>
             </td>
-            <td class="default">
+            <td>
                 'base64'
             </td>
-            <td class="description last">encoding of the resulting hash. One of 'base64', 'hex' or 'binary'</td>
+            <td>encoding of the resulting hash. One of 'base64', 'hex' or 'binary'</td>
         </tr>
         <tr>
-            <td class="name"><code>excludes</code></td>
-            <td class="type">
-                <span class="param-type">Array.&lt;string&gt;</span>
+            <td>excludes</td>
+            <td>
+                <span>Array.&lt;string&gt;</span>
             </td>
-            <td class="attributes">
+            <td>
                 &lt;optional&gt;<br>
             </td>
-            <td class="default">
+            <td>
                 []
             </td>
-            <td class="description last">Array of optional exclude file glob patterns, see minimatch doc</td>
+            <td>Array of optional exclude file glob patterns, see minimatch doc</td>
         </tr>
         <tr>
-            <td class="name"><code>match.basename</code></td>
-            <td class="type">
-                <span class="param-type">bool</span>
+            <td>match.basename</td>
+            <td>
+                <span>bool</span>
             </td>
-            <td class="attributes">
+            <td>
                 &lt;optional&gt;<br>
             </td>
-            <td class="default">
+            <td>
                 true
             </td>
-            <td class="description last">Match the exclude patterns to the file/folder name</td>
+            <td>Match the exclude patterns to the file/folder name</td>
         </tr>
         <tr>
-            <td class="name"><code>match.path</code></td>
-            <td class="type">
-                <span class="param-type">bool</span>
+            <td>match.path</td>
+            <td>
+                <span>bool</span>
             </td>
-            <td class="attributes">
+            <td>
                 &lt;optional&gt;<br>
             </td>
-            <td class="default">
+            <td>
                 true
             </td>
-            <td class="description last">Match the exclude patterns to the file/folder path</td>
+            <td>Match the exclude patterns to the file/folder path</td>
         </tr>
     </tbody>
 </table>
