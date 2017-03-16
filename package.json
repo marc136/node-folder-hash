@@ -19,6 +19,7 @@
     "url": "https://github.com/marc136/node-folder-hash.git"
   },
   "dependencies": {
+    "graceful-fs": "^4.1.11",
     "minimatch": "^3.0.3",
     "when": "^3.7.7"
   },
