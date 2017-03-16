@@ -4,7 +4,7 @@ var folderHash = require('../index');
 
 var helper = require('./helper/helper.js');
 
-var fs = require('fs');
+var fs = require('graceful-fs');
 var path = require('path');
 
 var assert = require('assert');
