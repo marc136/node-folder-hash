@@ -64,7 +64,6 @@ First, install the dependencies by executing `npm install`.
     // pass options (example: exclude dotFiles)
     var options = { excludes: ['**/.*'], match: { basename: false, path: true } };
     hasher.hashElement(__dirname, options, function (error, hash) {
-        if (error) return console.error('hashing failed:', error);
         console.log('Result for folder "' + __dirname + '":');
         console.log(hash.toString());
     });
