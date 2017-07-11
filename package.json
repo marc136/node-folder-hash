@@ -19,13 +19,13 @@
     "url": "https://github.com/marc136/node-folder-hash.git"
   },
   "dependencies": {
-    "graceful-fs": "^4.1.11",
-    "minimatch": "^3.0.3",
-    "when": "^3.7.7"
+    "graceful-fs": "~4.1.11",
+    "minimatch": "~3.0.4",
+    "when": "~3.7.8"
   },
   "devDependencies": {
-    "chai": "^3.5.0",
-    "chai-as-promised": "^6.0.0",
+    "chai": "^4.0.2",
+    "chai-as-promised": "^7.1.1",
     "istanbul": "^0.4.5",
     "jsdoc": "^3.4.3",
     "mocha": "^3.2.0",
