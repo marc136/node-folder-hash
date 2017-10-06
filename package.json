@@ -1,13 +1,13 @@
 {
   "name": "folder-hash",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Create a hash checksum over a folder and its content - its children and their content",
   "main": "index.js",
   "scripts": {
     "start": "node sample.js",
     "test": "mocha --reporter spec test",
     "cover": "node node_modules/istanbul/lib/cli.js cover --dir test_coverage node_modules/mocha/bin/_mocha test",
-    "doc": "./node_modules/.bin/jsdoc index.js"
+    "doc": "./node_modules/.bin/jsdoc index.js -R README.md -d doc"
   },
   "author": {
     "name": "Marc Walter",
