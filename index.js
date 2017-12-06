@@ -1,4 +1,4 @@
-﻿"use strict"
+"use strict"
 
 var fs = require('graceful-fs');
 var path = require('path');
@@ -23,11 +23,11 @@ module.exports = {
 
 /**
  * Create a hash over a folder or file, using either promises or error-first-callbacks.
- * 
+ *
  * Examples:
  * - hashElement(filename, folderpath, options, fn(err, hash) {}), hashElement(filename, folderpath, options);
  * - hashElement(path, fn(err, hash) {}), hashElement(path)
- * 
+ *
  * @param {string} name - element name or an element's path
  * @param {string} [dir] - directory that contains the element (if omitted is generated from name)
  * @param {Object} [options] - Options
@@ -43,7 +43,7 @@ function hashElement(name, directoryPath, options, callback) {
     var callback = arguments[arguments.length-1];
 
     return promise
-    .then(function (result) { 
+    .then(function (result) {
         if (typeof callback === 'function') return callback(undefined, result);
         return result;
      })
@@ -85,7 +85,9 @@ function parseParameters(args) {
             return acc + '|' + minimatch.makeRe(exclude).source;
         }, '').substr(1));
     }
-    //console.log('parsed options:', options);    
+    //console.log('parsed options:', options);
+
+    options.baseDirectory = args[0]; /////////////////////////////////////////////////////////////////////// Handle The Two Directory Input Varibles
 
     return hashElementPromise(elementBasename, elementDirname, options);
 }
@@ -175,7 +177,23 @@ var HashedFolder = function (name, children, options) {
     this.children = children;
 
     var hash = crypto.createHash(options.algo);
-    hash.write(name);
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    var rootFolder;
+    if(options.ignoreRootFolder) { //REDO EVERYTHING IN THIS IF BEFORE PULL REQUEST
+      var dir = options.baseDirectory.split("/");
+      if(dir[dir.length -1] == "") {
+        rootFolder = dir[dir.length -2];
+      } else {
+        rootFolder = dir[dir.length -2];
+      }
+    }
+
+    if(name != rootFolder) {
+      hash.write(name);
+    }
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     children.forEach(function (child) {
         if (child.hash) {
             hash.write(child.hash);
