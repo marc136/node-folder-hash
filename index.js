@@ -87,7 +87,7 @@ function parseParameters(args) {
     }
     //console.log('parsed options:', options);
 
-    options.baseDirectory = args[0]; /////////////////////////////////////////////////////////////////////// Handle The Two Directory Input Varibles
+    options.baseDirectory = args[0];
 
     return hashElementPromise(elementBasename, elementDirname, options);
 }
@@ -177,10 +177,8 @@ var HashedFolder = function (name, children, options) {
     this.children = children;
 
     var hash = crypto.createHash(options.algo);
-
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     var rootFolder;
-    if(options.ignoreRootFolder) { //REDO EVERYTHING IN THIS IF BEFORE PULL REQUEST
+    if(options.ignoreRootFolder) {
       var dir = options.baseDirectory.split("/");
       if(dir[dir.length -1] == "") {
         rootFolder = dir[dir.length -2];
@@ -192,7 +190,6 @@ var HashedFolder = function (name, children, options) {
     if(name != rootFolder) {
       hash.write(name);
     }
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     children.forEach(function (child) {
         if (child.hash) {
