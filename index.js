@@ -16,7 +16,7 @@ var defaultOptions = {
     }
 };
 
-function prep (fs) {
+function prep(fs, Promise) {
     /**
      * Create a hash over a folder or file, using either promises or error-first-callbacks.
      * 
@@ -225,6 +225,6 @@ function prep (fs) {
 }
 
 module.exports = {
-    hashElement: prep(require("graceful-fs")),
+    hashElement: prep(require("graceful-fs"), Promise),
     prep: prep
 };
