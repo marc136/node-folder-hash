@@ -1,11 +1,12 @@
 ﻿
 if (typeof Promise === 'undefined') require('when/es6-shim/Promise');
-var folderHash = require('../index');
 
 var helper = require('./helper/helper.js');
 
 var fs = require('graceful-fs');
 var path = require('path');
+
+var folderHash = require('../index');
 
 var assert = require('assert');
 var chai = require('chai');
