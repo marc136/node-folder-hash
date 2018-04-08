@@ -1,28 +1,27 @@
 ﻿
-var crypto = require('crypto');
-var path = require('path');
+const crypto = require('crypto'),
+    path = require('path');
 
-var hashFile = require('../index.js');
+const hashFolder = require('../index.js');
 
-console.log('Known hash algorithms: ', '\'' + crypto.getHashes().join('\', \'') + '\'');
+console.log(`Known hash algorithms:\n'${crypto.getHashes().join(`', '`)}'\n`);
 
+const dir = path.resolve(__dirname, '../');
 
-function checkPromise(promise) {
-    promise.then(function (result) {
-        console.log('Promise resolved:\n', result.toString(), '\n\n');
+hashFolder.hashElement('README.md', dir)
+    .then(result => {
+        console.log('\nCreated a hash over a single file:');
+        console.log(result.toString());
     })
-    .catch(function (reason) {
-        console.error('Promise rejected due to:\n', reason, '\n\n');
+    .catch(reason => {
+        console.error(`\nPromise rejected due to:\n${reason}\n\n`);
     });
-}
 
-
-var file = 'README.md';
-var dir = path.resolve(__dirname, '../');
-
-console.log('\nCreate a hash over a single file:');
-checkPromise(hashFile.hashElement(file, dir));
-
-console.log('Create hash over a folder:');
-//checkPromise(hashFile.hashElement(path.basename(dir), path.dirname(dir)));
-checkPromise(hashFile.hashElement('test', dir));
+hashFolder.hashElement(dir, { excludes: ['.git', 'doc', 'node_modules', 'test_coverage'] }, (err, result) => {
+    if (err) {
+        console.error(`\nFailed to create a hash due to:\n${err}`);
+    } else {
+        console.log('\nCreated a hash over a folder:');
+        console.log(result.toString());
+    }
+});

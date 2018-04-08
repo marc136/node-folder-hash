@@ -1,21 +1,15 @@
 ﻿Create a hash checksum over a folder or a file.  
 The hashes are propagated upwards, the hash that is returned for a folder is generated over all the hashes of its children.  
-The hashes are generated with the _sha1_ algorithm and returned in _base64_ encoding.
+The hashes are generated with the _sha1_ algorithm and returned in _base64_ encoding by default.
 
-The returned information looks like this:
+The returned information looks for example like this:
 
 ```js
-{ name: 'test', 
-    hash: 'qmUXLCsTQGOEF6p0w9V78MC7sJI=',
-    children: [
-    { name: 'helper', 
-        hash: 'x1CX3yVH3UuLTw7zcSitSs/PbGE=',
-        children: [
-        { name: 'helper.js', hash: 'pHYwd8k/oZV01oABTz9MC8KovkU=' }
-        ] },
-    { name: 'test.js', hash: 'L/vqpdQhxmD5w62k24m4TuZJ1PM=' }
-    ] 
-}
+{ name: 'test', hash: '/OGctelE4POJrA1V7TgHAiu4sLE=',
+children: [
+  { name: 'parameters.js', hash: 'XqRgD2UGWX2HU96LZqWFNm8M8OY=' }
+  { name: 'test.js', hash: 'VJd2RQ+TVE4YGgD9w6F+RMtltJE=' }
+]}}
 ```
 
 Each file returns a name and a hash, and each folder returns additionally an array of children (file or folder elements).  
@@ -26,48 +20,66 @@ First, install folder-hash with `npm install --save folder-hash`.
 ### With promises  
 
 ```js
-var hasher = require('folder-hash');
+const path = require('path');
+const { hashElement } = require('../index.js');
+
 // pass element name and folder path separately
-hasher.hashElement('node_modules', __dirname).then(function (hash) {
-    console.log('Result for folder "node_modules" in directory "' + __dirname + '":');
+hashElement('test', path.join(__dirname, '..'))
+  .then(hash => {
+    console.log('Result for folder "../test":');
     console.log(hash.toString());
-});
+  })
+  .catch(error => {
+    return console.error('hashing failed:', error);
+  });
+
 // pass element path directly
-hasher.hashElement(__dirname).then(function (hash) {
-    console.log('Result for folder "' + __dirname + '":');
+hashElement(__dirname)
+  .then(hash => {
+    console.log(`Result for folder "${__dirname}":`);
     console.log(hash.toString());
-});
+  })
+  .catch(error => {
+    return console.error('hashing failed:', error);
+  });
+
 // pass options (example: exclude dotFiles)
-var options = { excludes: ['.*'], match: { basename: true, path: false } };
-hasher.hashElement(__dirname, options)
-.then(function (hash) {
-  console.log('Result for folder "' + __dirname + '":');
-  console.log(hash.toString());
-})
-.catch(function (error) {
-  return console.error('hashing failed:', error);
-});
+const options = {
+  algo: 'md5', excludes: ['.*'],
+  match: { basename: true, path: false }
+};
+hashElement(__dirname, options)
+  .then(function (hash) {
+    console.log('Result for folder "' + __dirname + '" (with options):');
+    console.log(hash.toString());
+  })
+  .catch(error => {
+    return console.error('hashing failed:', error);
+  });
 ```
 
 ### With callbacks
 
 ```js
-var hasher = require('folder-hash');
+const path = require('path');
+const { hashElement } = require('../index.js');
+
 // pass element name and folder path separately
-hasher.hashElement('node_modules', __dirname, function (error, hash) {
+hashElement('test', path.join(__dirname, '..'), (error, hash) => {
     if (error) return console.error('hashing failed:', error);
-    console.log('Result for folder "node_modules" in directory "' + __dirname + '":');
-    console.log(hash.toString());
+    console.log('Result for folder "../test":', hash.toString());
 });
+
 // pass element path directly
-hasher.hashElement(__dirname, function (error, hash) {
+hashElement(__dirname, (error, hash) => {
     if (error) return console.error('hashing failed:', error);
     console.log('Result for folder "' + __dirname + '":');
     console.log(hash.toString());
 });
+
 // pass options (example: exclude dotFiles)
-var options = { excludes: ['**/.*'], match: { basename: false, path: true } };
-hasher.hashElement(__dirname, options, function (error, hash) {
+const options = { excludes: ['**/.*'], match: { basename: false, path: true } };
+hashElement(__dirname, options, (error, hash) => {
     console.log('Result for folder "' + __dirname + '":');
     console.log(hash.toString());
 });

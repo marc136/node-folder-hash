@@ -1,27 +1,39 @@
 // execute from the base folder
 //  node examples\readme-with-promises.js
 
-var hasher = require('../index.js');
+const path = require('path');
+const { hashElement } = require('../index.js');
 
 // pass element name and folder path separately
-hasher.hashElement('node_modules', __dirname).then(function (hash) {
-    console.log('Result for folder "node_modules" in directory "' + __dirname + '":');
+hashElement('test', path.join(__dirname, '..'))
+  .then(hash => {
+    console.log('Result for folder "../test":');
     console.log(hash.toString());
-});
+  })
+  .catch(error => {
+    return console.error('hashing failed:', error);
+  });
 
 // pass element path directly
-hasher.hashElement(__dirname).then(function (hash) {
-    console.log('Result for folder "' + __dirname + '":');
+hashElement(__dirname)
+  .then(hash => {
+    console.log(`Result for folder "${__dirname}":`);
     console.log(hash.toString());
-});
+  })
+  .catch(error => {
+    return console.error('hashing failed:', error);
+  });
 
 // pass options (example: exclude dotFiles)
-var options = { excludes: ['.*'], match: { basename: true, path: false } };
-hasher.hashElement(__dirname, options)
-.then(function (hash) {
-  console.log('Result for folder "' + __dirname + '":');
-  console.log(hash.toString());
-})
-.catch(function (error) {
-  return console.error('hashing failed:', error);
-});
+const options = {
+  algo: 'md5', excludes: ['.*'],
+  match: { basename: true, path: false }
+};
+hashElement(__dirname, options)
+  .then(function (hash) {
+    console.log('Result for folder "' + __dirname + '" (with options):');
+    console.log(hash.toString());
+  })
+  .catch(error => {
+    return console.error('hashing failed:', error);
+  });
