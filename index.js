@@ -33,22 +33,28 @@ function prep(fs, Promise) {
      * @param {fn} [callback] - Error-first callback function
      */
     function hashElement(name, directoryPath, options, callback) {
-        var config = parseParameters(arguments);
-        var callback = arguments[arguments.length-1];
+        callback = arguments[arguments.length - 1];
 
         return parseParameters(arguments)
-        .then(({basename, dir, options}) => {
             //console.log('parsed options:', options);
-            return hashElementPromise(basename, dir, options)
-        })
-        .then(function (result) {
-            if (typeof callback === 'function') return callback(undefined, result);
-            return result;
-        })
-        .catch(function (reason) {
-            if (typeof callback === 'function') return callback(reason);
-            throw reason;
-        });
+            .then(({ basename, dir, options }) => {
+                //console.log('parsed options:', options);
+                return hashElementPromise(basename, dir, options)
+            })
+            .then(function (result) {
+                if (typeof callback === 'function') {
+                    return callback(undefined, result);
+                } else {
+                    return result;
+                }
+            })
+            .catch(function (reason) {
+                if (typeof callback === 'function') {
+                    return callback(reason);
+                } else {
+                    throw reason;
+                }
+            });
     }
 
     function hashElementPromise(basename, dirname, options) {
@@ -146,20 +152,23 @@ function prep(fs, Promise) {
         this.hash = hash.digest(options.encoding);
     }
 
-    HashedFolder.prototype.toString = function (padding) {
-        if (typeof padding === 'undefined') padding = "";
-        var str = padding + '{ name: \'' + this.name + '\', hash: \'' + this.hash + '\'\n';
+    HashedFolder.prototype.toString = function (padding = '') {
+        const first = `${padding}{ name: '${this.name}', hash: '${this.hash}'\n`;
         padding += '  ';
-        str += padding + 'children: ';
-        if (this.children.length === 0) {
-            str += '[]';
-        } else {
-            var nextPadding = padding + "  ";
-            var childElements = this.children.map(function (child) { return child.toString(nextPadding); });
-            str += '[\n' + childElements.join('\n') + '\n' + padding + ']';
-        }
 
-        return str + ' }';
+        return `${first}${padding}children: ${this.childrenToString(padding)}}`
+    }
+
+    HashedFolder.prototype.childrenToString = function (padding = '') {
+        if (this.children.length === 0) {
+            return '[]';
+        } else {
+            const nextPadding = padding + '  ';
+            const children = this.children
+                .map(child => child.toString(nextPadding))
+                .join('\n');
+            return `[\n${children}\n${padding}]`;
+        }
     }
 
 

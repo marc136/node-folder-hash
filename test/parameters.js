@@ -12,13 +12,21 @@ chai.use(chaiAsPromised);
 const should = chai.should();
 
 describe('Initialization', function () {
+    function checkError(err) {
+        err.name.should.equal('TypeError');
+        err.message.should.equal('First argument must be a string');
+    }
+
     it('should reject if no name was passed', function () {
-        return folderHash.hashElement().should.be.rejectedWith(TypeError);
+        return folderHash.hashElement()
+            .then(result => { throw new Error(result); })
+            .catch(checkError)
     });
 
     it('should call an error callback if no name was passed', function () {
-        return folderHash.hashElement(function (err) {
+        return folderHash.hashElement(err => {
             should.exist(err);
+            checkError(err);
         });
     });
 });
