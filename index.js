@@ -4,7 +4,7 @@ var path = require('path');
 var crypto = require('crypto');
 var minimatch = require('minimatch');
 
-var defaultOptions = {
+const defaultOptions = {
     algo: 'sha1',       // see crypto.getHashes() for options
     encoding: 'base64', // 'base64', 'hex' or 'binary'
     excludes: [],
@@ -33,11 +33,15 @@ function prep(fs, Promise) {
      * @param {fn} [callback] - Error-first callback function
      */
     function hashElement(name, directoryPath, options, callback) {
-        var promise = parseParameters(arguments);
+        var config = parseParameters(arguments);
         var callback = arguments[arguments.length-1];
 
-        return promise
-        .then(function (result) { 
+        return parseParameters(arguments)
+        .then(({basename, dir, options}) => {
+            //console.log('parsed options:', options);
+            return hashElementPromise(basename, dir, options)
+        })
+        .then(function (result) {
             if (typeof callback === 'function') return callback(undefined, result);
             return result;
         })
@@ -45,43 +49,6 @@ function prep(fs, Promise) {
             if (typeof callback === 'function') return callback(reason);
             throw reason;
         });
-    }
-
-    function parseParameters(args) {
-        var elementBasename = args[0],
-            elementDirname = args[1],
-            options = args[2];
-
-        if (!isString(elementBasename)) {
-            return Promise.reject(new TypeError('First argument must be a string'));
-        }
-
-        if (!isString(elementDirname)) {
-            elementDirname = path.dirname(elementBasename);
-            elementBasename = path.basename(elementBasename);
-            options = args[1];
-        }
-
-        // parse options (fallback default options)
-        if (!isObject(options)) options = {};
-        ['algo', 'encoding', 'excludes'].forEach(function(key) {
-            if (!options.hasOwnProperty(key)) options[key] = defaultOptions[key];
-        });
-        if (!options.match) options.match = {};
-        if (!options.match.hasOwnProperty('basename')) options.match.basename = defaultOptions.match.basename;
-        if (!options.match.hasOwnProperty('path')) options.match.path = defaultOptions.match.path;
-
-        if (!options.excludes || !Array.isArray(options.excludes) || options.excludes.length == 0) {
-            options.excludes = undefined;
-        } else {
-            // combine globs into one single RegEx
-            options.excludes = new RegExp(options.excludes.reduce(function (acc, exclude) {
-                return acc + '|' + minimatch.makeRe(exclude).source;
-            }, '').substr(1));
-        }
-        //console.log('parsed options:', options);    
-
-        return hashElementPromise(elementBasename, elementDirname, options);
     }
 
     function hashElementPromise(basename, dirname, options) {
@@ -164,7 +131,7 @@ function prep(fs, Promise) {
     }
 
 
-    var HashedFolder = function (name, children, options) {
+    const HashedFolder = function (name, children, options) {
         this.name = name;
         this.children = children;
 
@@ -196,33 +163,71 @@ function prep(fs, Promise) {
     }
 
 
-    var HashedFile = function (name, hash, options) {
+    const HashedFile = function (name, hash, options) {
         this.name = name;
         this.hash = hash.digest(options.encoding);
     }
 
-    HashedFile.prototype.toString = function (padding) {
-        if (typeof padding === 'undefined') padding = "";
+    HashedFile.prototype.toString = function (padding = '') {
         return padding + '{ name: \'' + this.name + '\', hash: \'' + this.hash + '\' }';
-    }
-
-
-    function isString(str) {
-        return (typeof str == 'string' || str instanceof String)
-    }
-
-    function isObject(obj) {
-        return obj != null && typeof obj === 'object'
-    }
-
-    function notUndefined(obj) {
-        return typeof obj !== undefined;
     }
 
     return hashElement;
 }
 
+function parseParameters(args) {
+    let basename = args[0],
+        dir = args[1],
+        options_ = args[2];
+
+    if (!isString(basename)) {
+        return Promise.reject(new TypeError('First argument must be a string'));
+    }
+
+    if (!isString(dir)) {
+        dir = path.dirname(basename);
+        basename = path.basename(basename);
+        options_ = args[1];
+    }
+
+    // parse options (fallback default options)
+    if (!isObject(options_)) options_ = {}
+    const options = {
+        algo: options_.algo || defaultOptions.algo,
+        encoding: options_.encoding || defaultOptions.encoding,
+        excludes: reduceGlobPatterns(notUndefined(options_.excludes) ? options_.excludes : defaultOptions.excludes),
+        match: Object.assign({}, defaultOptions.match, options_.match),
+    }
+
+    return Promise.resolve({ basename, dir, options })
+}
+
+function isString(str) {
+    return (typeof str == 'string' || str instanceof String)
+}
+
+function isObject(obj) {
+    return obj != null && typeof obj === 'object'
+}
+
+function notUndefined(obj) {
+    return typeof obj !== undefined;
+}
+
+function reduceGlobPatterns(globs) {
+    if (!globs || !Array.isArray(globs) || globs.length == 0) {
+        return undefined;
+    } else {
+        // combine globs into one single RegEx
+        return new RegExp(globs.reduce(function (acc, exclude) {
+            return acc + '|' + minimatch.makeRe(exclude).source;
+        }, '').substr(1));
+    }
+}
+
 module.exports = {
     hashElement: prep(require("graceful-fs"), Promise),
-    prep: prep
+    // exposed for testing
+    prep: prep,
+    parseParameters: parseParameters
 };

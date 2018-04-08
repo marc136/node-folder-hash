@@ -1,36 +1,29 @@
 ﻿var helper = require('./helper/helper.js');
+const folderHash = require('../index');
 
-var fs = require('graceful-fs');
-var path = require('path');
-
-var folderHash = require('../index');
-
-var assert = require('assert');
-var chai = require('chai');
-var chaiAsPromised = require('chai-as-promised');
+const fs = require('graceful-fs'),
+    path = require('path'),
+    assert = require('assert'),
+    chai = require('chai'),
+    chaiAsPromised = require('chai-as-promised');
 
 chai.use(chaiAsPromised);
-chai.should();
+const should = chai.should();
 
-var sampleFolder = 'sample-folder';
+const sampleFolder = 'sample-folder';
 before(helper.createTestFolderStructure(sampleFolder));
-
-describe('Initialization', function () {
-    it('should throw an error if no name was passed', function () {
-        folderHash.hashElement().should.be.rejectedWith(TypeError);
-        folderHash.hashElement(function () {}).should.be.rejectedWith(TypeError);
-    });
-});
 
 
 describe('Should generate hashes', function () {
     describe('when called as a promise', function () {
         it('with element and folder passed as two strings', function () {
-            return folderHash.hashElement('file1', sampleFolder).should.eventually.have.property('hash');
+            return folderHash.hashElement('file1', sampleFolder)
+                .should.eventually.have.property('hash');
         });
 
         it('with element path passed as one string', function () {
-            return folderHash.hashElement(path.join(sampleFolder, 'file1')).should.eventually.have.property('hash');
+            return folderHash.hashElement(path.join(sampleFolder, 'file1'))
+                .should.eventually.have.property('hash');
         });
 
         it('with options passed', function () {
@@ -43,29 +36,25 @@ describe('Should generate hashes', function () {
                     path: false
                 }
             };
-            return folderHash.hashElement('file1', sampleFolder, options)//.should.eventually.have.property('hash');
-            .then((a) => console.log('a:', a)).catch(b => console.error('b', b));
+            return folderHash.hashElement('file1', sampleFolder, options)
+                .should.eventually.have.property('hash');
         });
     });
 
     describe('when executed with an error-first callback', function () {
-        it('with element and folder passed as two strings', function (done) {
-            folderHash.hashElement('file1', sampleFolder, function (err, hash) {
-                if (err) throw err;
-                else {
-                    assert.ok(hash.hash);
-                    done();
-                }
+        it('with element and folder passed as two strings', function () {
+            return folderHash.hashElement('file1', sampleFolder, function (err, hash) {
+                should.not.exist(err);
+                should.exist(hash);
+                should.exist(hash.hash);
             });
         });
 
-        it('with element path passed as one string', function (done) {
-            folderHash.hashElement(path.join(sampleFolder, 'file1'), function (err, hash) {
-                if (err) throw err;
-                else {
-                    assert.ok(hash.hash);
-                    done();
-                }
+        it('with element path passed as one string', function () {
+            return folderHash.hashElement(path.join(sampleFolder, 'file1'), function (err, hash) {
+                should.not.exist(err);
+                should.exist(hash);
+                should.exist(hash.hash);
             });
         });
     });
@@ -73,11 +62,11 @@ describe('Should generate hashes', function () {
     describe('and', function () {
         it('should return a string representation', function () {
             folderHash.hashElement('./', sampleFolder)
-            .then(function (hash) {
-                var str = hash.toString();
-                assert.ok(str);
-                assert.ok(str.length > 10);
-            })
+                .then(function (hash) {
+                    var str = hash.toString();
+                    should.exist(str);
+                    should.equal(str.length > 10, true);
+                })
         });
     });
 });
