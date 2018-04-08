@@ -1,7 +1,4 @@
-﻿
-if (typeof Promise === 'undefined') require('when/es6-shim/Promise');
-
-var helper = require('./helper/helper.js');
+﻿var helper = require('./helper/helper.js');
 
 var fs = require('graceful-fs');
 var path = require('path');

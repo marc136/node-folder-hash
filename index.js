@@ -4,8 +4,6 @@ var path = require('path');
 var crypto = require('crypto');
 var minimatch = require('minimatch');
 
-if (typeof Promise === 'undefined') require('when/es6-shim/Promise');
-
 var defaultOptions = {
     algo: 'sha1',       // see crypto.getHashes() for options
     encoding: 'base64', // 'base64', 'hex' or 'binary'
