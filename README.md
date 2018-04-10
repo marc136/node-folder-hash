@@ -2,32 +2,83 @@
 The hashes are propagated upwards, the hash that is returned for a folder is generated over all the hashes of its children.  
 The hashes are generated with the _sha1_ algorithm and returned in _base64_ encoding by default.
 
-The returned information looks for example like this:
-
-```js
-{ name: 'test', hash: '/OGctelE4POJrA1V7TgHAiu4sLE=',
-children: [
-  { name: 'parameters.js', hash: 'XqRgD2UGWX2HU96LZqWFNm8M8OY=' }
-  { name: 'test.js', hash: 'VJd2RQ+TVE4YGgD9w6F+RMtltJE=' }
-]}}
-```
-
 Each file returns a name and a hash, and each folder returns additionally an array of children (file or folder elements).  
 
 ## Usage 
-First, install folder-hash with `npm install --save folder-hash`.  
+First, install folder-hash with `npm install --save folder-hash` or `yarn add folder-hash`.  
 
-### With promises  
+### Simple example
+See file *./examples/readme-example1.js*.  
+This example excludes all files and folders starting with a dot, (e.g. *.git/* and *.gitignore*), the *node_modules* folder.  
 
 ```js
+const { hashElement } = require('folder-hash');
+
+const options = {
+    folders: { exclude: ['.*', 'node_modules', 'test_coverage'] },
+    files: { include: ['*.js', '*.json'] }
+};
+
+console.log('Creating a hash over the current folder:');
+hashElement('.', options)
+    .then(hash => {
+        console.log(hash.toString());
+    })
+    .catch(error => {
+        return console.error('hashing failed:', error);
+    });
+```
+
+The returned information looks for example like this:
+```
+Creating a hash over the current folder:
+{ name: '.', hash: 'YZOrKDx9LCLd8X39PoFTflXGpRU=,'
+  children: [
+    { name: 'examples', hash: 'aG8wg8np5SGddTnw1ex74PC9EnM=,'
+      children: [
+        { name: 'readme-example1.js', hash: 'Xlw8S2iomJWbxOJmmDBnKcauyQ8=' }
+        { name: 'readme-with-callbacks.js', hash: 'ybvTHLCQBvWHeKZtGYZK7+6VPUw=' }
+        { name: 'readme-with-promises.js', hash: '43i9tE0kSFyJYd9J2O0nkKC+tmI=' }
+        { name: 'sample.js', hash: 'PRTD9nsZw3l73O/w5B2FH2qniFk=' }
+      ]}
+    { name: 'index.js', hash: 'kQQWXdgKuGfBf7ND3rxjThTLVNA=' }
+    { name: 'package.json', hash: 'w7F0S11l6VefDknvmIy8jmKx+Ng=' }
+    { name: 'test', hash: 'H5x0JDoV7dEGxI65e8IsencDZ1A=,'
+      children: [
+        { name: 'parameters.js', hash: '3gCEobqzHGzQiHmCDe5yX8weq7M=' }
+        { name: 'test.js', hash: 'kg7p8lbaVf1CPtWLAIvkHkdu1oo=' }
+      ]}
+  ]}
+```
+
+
+It is also possible to only match the full path and not the basename. The same configuration could look like this:  
+_But unfortunately *nix and Windows behave differently, so please use caution._
+```js
+const options = {
+    folders: {
+        exclude: ['.*', '**.*', '**node_modules', '**test_coverage'],
+        matchBasename: false, matchPath: true
+    },
+    files: {
+        //include: ['**.js', '**.json' ], // Windows
+        include: ['*.js', '**/*.js', '*.json', '**/*.json'], // *nix
+        matchBasename: false, matchPath: true
+    }
+};}
+```
+
+
+### Other examples using promises
+See file *./examples/readme-with-promises.js*
+```js
 const path = require('path');
-const { hashElement } = require('../index.js');
+const { hashElement } = require('folder-hash');
 
 // pass element name and folder path separately
 hashElement('test', path.join(__dirname, '..'))
   .then(hash => {
-    console.log('Result for folder "../test":');
-    console.log(hash.toString());
+    console.log('Result for folder "../test":', hash.toString(), '\n');
   })
   .catch(error => {
     return console.error('hashing failed:', error);
@@ -37,51 +88,59 @@ hashElement('test', path.join(__dirname, '..'))
 hashElement(__dirname)
   .then(hash => {
     console.log(`Result for folder "${__dirname}":`);
-    console.log(hash.toString());
+    console.log(hash.toString(), '\n');
   })
   .catch(error => {
     return console.error('hashing failed:', error);
   });
 
-// pass options (example: exclude dotFiles)
-const options = {
-  algo: 'md5', excludes: ['.*'],
-  match: { basename: true, path: false }
-};
+// pass options (example: exclude dotFolders)
+const options = { encoding: 'hex', folders: { exclude: ['.*'] } };
 hashElement(__dirname, options)
-  .then(function (hash) {
+  .then(hash => {
     console.log('Result for folder "' + __dirname + '" (with options):');
-    console.log(hash.toString());
+    console.log(hash.toString(), '\n');
   })
   .catch(error => {
     return console.error('hashing failed:', error);
   });
 ```
 
-### With callbacks
+### Other examples using error-first callbacks
+See *./examples/readme-with-callbacks.js*
 
 ```js
 const path = require('path');
-const { hashElement } = require('../index.js');
+const { hashElement } = require('folder-hash');
 
 // pass element name and folder path separately
 hashElement('test', path.join(__dirname, '..'), (error, hash) => {
-    if (error) return console.error('hashing failed:', error);
-    console.log('Result for folder "../test":', hash.toString());
+    if (error) {
+        return console.error('hashing failed:', error);
+    } else {
+        console.log('Result for folder "../test":', hash.toString(), '\n');
+    }
 });
 
 // pass element path directly
 hashElement(__dirname, (error, hash) => {
-    if (error) return console.error('hashing failed:', error);
-    console.log('Result for folder "' + __dirname + '":');
-    console.log(hash.toString());
+    if (error) {
+        return console.error('hashing failed:', error);
+    } else {
+        console.log('Result for folder "' + __dirname + '":');
+        console.log(hash.toString(), '\n');
+    }
 });
 
 // pass options (example: exclude dotFiles)
-const options = { excludes: ['**/.*'], match: { basename: false, path: true } };
+const options = { algo: 'md5', files: { exclude: ['.*'], matchBasename: true } };
 hashElement(__dirname, options, (error, hash) => {
-    console.log('Result for folder "' + __dirname + '":');
-    console.log(hash.toString());
+    if (error) {
+        return console.error('hashing failed:', error);
+    } else {
+        console.log('Result for folder "' + __dirname + '":');
+        console.log(hash.toString());
+    }
 });
 ```
 
@@ -114,7 +173,7 @@ hashElement(__dirname, options, (error, hash) => {
             <td>
                 &lt;optional&gt;<br>
             </td>
-            <td>directory that contains the element (if omitted is generated from name)</td>
+            <td>directory that contains the element (generated from name if omitted)</td>
         </tr>
         <tr>
             <td>options</td>
@@ -142,6 +201,26 @@ hashElement(__dirname, options, (error, hash) => {
 </table>
 
 #### Options object properties
+##### Default values
+```js
+{
+    algo: 'sha1',       // see crypto.getHashes() for options
+    encoding: 'base64', // 'base64', 'hex' or 'binary'
+    files: {
+        exclude: [],
+        include: [],
+        matchBasename: true,
+        matchPath: false
+    },
+    folders: {
+        exclude: [],
+        include: [],
+        matchBasename: true,
+        matchPath: false
+    }
+}
+```
+
 <table>
     <thead>
         <tr>
@@ -180,7 +259,46 @@ hashElement(__dirname, options, (error, hash) => {
             <td>encoding of the resulting hash. One of 'base64', 'hex' or 'binary'</td>
         </tr>
         <tr>
-            <td>excludes</td>
+            <td>files</td>
+            <td>
+                <span>Object</span>
+            </td>
+            <td>
+                &lt;optional&gt;<br>
+            </td>
+            <td colspan="2">
+                Rules object (see below)
+            </td>
+        </tr>
+        <tr>
+            <td>folders</td>
+            <td>
+                <span>Object</span>
+            </td>
+            <td>
+                &lt;optional&gt;<br>
+            </td>
+            <td colspan="2">
+                Rules object (see below)
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+#### Rules object properties
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Attributes</th>
+            <th>Default</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>exclude</td>
             <td>
                 <span>Array.&lt;string&gt;</span>
             </td>
@@ -190,10 +308,23 @@ hashElement(__dirname, options, (error, hash) => {
             <td>
                 []
             </td>
-            <td>Array of optional exclude file glob patterns, see minimatch doc</td>
+            <td>Array of optional exclude glob patterns, see <a href="https://github.com/isaacs/minimatch#features">minimatch doc</a></td>
         </tr>
         <tr>
-            <td>match.basename</td>
+            <td>include</td>
+            <td>
+                <span>Array.&lt;string&gt;</span>
+            </td>
+            <td>
+                &lt;optional&gt;<br>
+            </td>
+            <td>
+                []
+            </td>
+            <td>Array of optional include glob patterns, see <a href="https://github.com/isaacs/minimatch#features">minimatch doc</a></td>
+        </tr>
+        <tr>
+            <td>matchBasename</td>
             <td>
                 <span>bool</span>
             </td>
@@ -203,10 +334,10 @@ hashElement(__dirname, options, (error, hash) => {
             <td>
                 true
             </td>
-            <td>Match the exclude patterns to the file/folder name</td>
+            <td>Match the glob patterns to the file/folder name</td>
         </tr>
         <tr>
-            <td>match.path</td>
+            <td>matchPath</td>
             <td>
                 <span>bool</span>
             </td>
@@ -214,9 +345,9 @@ hashElement(__dirname, options, (error, hash) => {
                 &lt;optional&gt;<br>
             </td>
             <td>
-                true
+                false
             </td>
-            <td>Match the exclude patterns to the file/folder path</td>
+            <td>Match the glob patterns to the file/folder path</td>
         </tr>
     </tbody>
 </table>

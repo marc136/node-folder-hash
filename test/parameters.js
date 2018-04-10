@@ -20,7 +20,7 @@ describe('Initialization', function () {
     it('should reject if no name was passed', function () {
         return folderHash.hashElement()
             .then(result => { throw new Error(result); })
-            .catch(checkError)
+            .catch(checkError);
     });
 
     it('should call an error callback if no name was passed', function () {
@@ -34,27 +34,35 @@ describe('Initialization', function () {
 describe('Parse parameters', function () {
     it('should not change the supplied options object', function () {
         const params = {
-            algo: 'some', excludes: ['abc', 'def'],
+            algo: 'some',
+            files: { exclude: ['abc', 'def'], include: [] },
+            folders: { exclude: [], include: ['abc', 'def'] },
             match: { basename: false, path: 'true' }
         };
-        const str = JSON.stringify(params)
+        const str = JSON.stringify(params);
 
         return folderHash.parseParameters('abc', params)
-            .then(() => JSON.stringify(params).should.equal(str))
+            .then(() => JSON.stringify(params).should.equal(str));
     });
 
-    it('should parse an empty excludes array to undefined', function () {
+    it('should parse an empty exclude array to undefined', function () {
         const params = {
-            algo: 'some', excludes: [],
+            algo: 'some', files: { exclude: [] },
             match: { basename: false, path: 'true' }
         };
 
         return folderHash.parseParameters('abc', params)
-            .then(parsed => should.equal(parsed.excludes, undefined));
+            .then(parsed => {
+                should.exist(parsed.options.files);
+                should.equal(parsed.options.files.exclude, undefined);
+            });
     });
 
     it('should default excludes to undefined', function () {
-        return folderHash.parseParameters('abc', { excludes: undefined })
-            .then(parsed => should.equal(parsed.excludes, undefined));
+        return folderHash.parseParameters('abc', { files: undefined })
+            .then(parsed => {
+                should.exist(parsed.options.folders);
+                should.equal(parsed.options.folders.exclude, undefined);
+            });
     });
-})
+});

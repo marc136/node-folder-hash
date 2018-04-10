@@ -1,6 +1,6 @@
 {
   "name": "folder-hash",
-  "version": "1.1.2",
+  "version": "2.0.0",
   "description": "Create a hash checksum over a folder and its content - its children and their content",
   "main": "index.js",
   "scripts": {
@@ -19,6 +19,7 @@
     "url": "https://github.com/marc136/node-folder-hash.git"
   },
   "dependencies": {
+    "debug": "^3.1.0",
     "graceful-fs": "~4.1.11",
     "minimatch": "~3.0.4"
   },

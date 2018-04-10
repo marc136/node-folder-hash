@@ -17,7 +17,10 @@ hashFolder.hashElement('README.md', dir)
         console.error(`\nPromise rejected due to:\n${reason}\n\n`);
     });
 
-hashFolder.hashElement(dir, { excludes: ['.git', 'doc', 'node_modules', 'test_coverage'] }, (err, result) => {
+hashFolder.hashElement(dir, {
+    files: { exclude: ['.*'], matchBasename: true },
+    folders: { include: ['examples', 'test'], matchBasename: true }
+}, (err, result) => {
     if (err) {
         console.error(`\nFailed to create a hash due to:\n${err}`);
     } else {

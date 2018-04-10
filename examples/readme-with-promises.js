@@ -7,8 +7,7 @@ const { hashElement } = require('../index.js');
 // pass element name and folder path separately
 hashElement('test', path.join(__dirname, '..'))
   .then(hash => {
-    console.log('Result for folder "../test":');
-    console.log(hash.toString());
+    console.log('Result for folder "../test":', hash.toString(), '\n');
   })
   .catch(error => {
     return console.error('hashing failed:', error);
@@ -18,21 +17,18 @@ hashElement('test', path.join(__dirname, '..'))
 hashElement(__dirname)
   .then(hash => {
     console.log(`Result for folder "${__dirname}":`);
-    console.log(hash.toString());
+    console.log(hash.toString(), '\n');
   })
   .catch(error => {
     return console.error('hashing failed:', error);
   });
 
-// pass options (example: exclude dotFiles)
-const options = {
-  algo: 'md5', excludes: ['.*'],
-  match: { basename: true, path: false }
-};
+// pass options (example: exclude dotFolders)
+const options = { encoding: 'hex', folders: { exclude: ['.*'] } };
 hashElement(__dirname, options)
-  .then(function (hash) {
+  .then(hash => {
     console.log('Result for folder "' + __dirname + '" (with options):');
-    console.log(hash.toString());
+    console.log(hash.toString(), '\n');
   })
   .catch(error => {
     return console.error('hashing failed:', error);

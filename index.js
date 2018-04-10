@@ -1,54 +1,52 @@
-﻿"use strict"
-
-var path = require('path');
-var crypto = require('crypto');
-var minimatch = require('minimatch');
+﻿const crypto = require('crypto'),
+    debug = require('debug'),
+    minimatch = require('minimatch'),
+    path = require('path');
 
 const defaultOptions = {
     algo: 'sha1',       // see crypto.getHashes() for options
     encoding: 'base64', // 'base64', 'hex' or 'binary'
-    excludes: [],
-    match: {
-        basename: true,
-        path: true
+    files: {
+        exclude: [],
+        include: [],
+        matchBasename: true,
+        matchPath: false
+    },
+    folders: {
+        exclude: [],
+        include: [],
+        matchBasename: true,
+        matchPath: false
+    }
+};
+
+// Use the environment variable DEBUG to log output, e.g. `set DEBUG=fhash:*`
+const log = {
+    match: debug('fhash:match'),
+    params: (params) => {
+        debug('fhash:parameters')(params);
+        return params;
     }
 };
 
 function prep(fs, Promise) {
-    /**
-     * Create a hash over a folder or file, using either promises or error-first-callbacks.
-     * 
-     * Examples:
-     * - hashElement(filename, folderpath, options, fn(err, hash) {}), hashElement(filename, folderpath, options);
-     * - hashElement(path, fn(err, hash) {}), hashElement(path)
-     * 
-     * @param {string} name - element name or an element's path
-     * @param {string} [dir] - directory that contains the element (if omitted is generated from name)
-     * @param {Object} [options] - Options
-     * @param {string} [options.algo='sha1'] - checksum algorithm, see options in crypto.getHashes()
-     * @param {string} [options.encoding='base64'] - encoding of the resulting hash. One of 'base64', 'hex' or 'binary'
-     * @param {string[]} [options.excludes=[]] - Array of optional exclude file glob patterns, see minimatch doc
-     * @param {bool} [options.match.basename=true] - Match the exclude patterns to the file/folder name
-     * @param {bool} [options.match.path=true] - Match the exclude patterns to the file/folder path
-     * @param {fn} [callback] - Error-first callback function
-     */
-    function hashElement(name, directoryPath, options, callback) {
+    function hashElement(name, dir, options, callback) {
         callback = arguments[arguments.length - 1];
 
         return parseParameters(arguments)
-            //console.log('parsed options:', options);
             .then(({ basename, dir, options }) => {
-                //console.log('parsed options:', options);
-                return hashElementPromise(basename, dir, options)
+                // this is only used for the root level
+                options.skipMatching = true;
+                return hashElementPromise(basename, dir, options);
             })
-            .then(function (result) {
+            .then(result => {
                 if (typeof callback === 'function') {
                     return callback(undefined, result);
                 } else {
                     return result;
                 }
             })
-            .catch(function (reason) {
+            .catch(reason => {
                 if (typeof callback === 'function') {
                     return callback(reason);
                 } else {
@@ -58,106 +56,143 @@ function prep(fs, Promise) {
     }
 
     function hashElementPromise(basename, dirname, options) {
-        var filepath = path.join(dirname, basename);
-
-        if (options.match.basename && options.excludes && options.excludes.test(basename)) {
-            //console.log('regex', options.excludes, 'matched to', basename);
-            return Promise.resolve(undefined);
-        }
-
-        if (options.match.path && options.excludes && options.excludes.test(filepath)) {
-            //console.log('regex', options.excludes, 'matched to', filepath);
-            return Promise.resolve(undefined);
-        }
-
-        return new Promise(function (resolve, reject, notify) {
-            fs.stat(filepath, function (err, stats) {
-                if (err) {
-                    return reject(err);
-                }
-
-                if (stats.isDirectory()) {
-                    resolve(hashFolderPromise(basename, dirname, options));
-                } else if (stats.isFile()) {
-                    resolve(hashFilePromise(basename, dirname, options));
-                } else {
-                    resolve({ name: basename, hash: 'unknown element type' });
-                }
-            });
-        });
-    }
-
-
-    function hashFolderPromise(foldername, directoryPath, options) {
-        var folderPath = path.join(directoryPath, foldername);
-
-        var notExcluded = function notExcluded(basename) {
-            return !(options.match.basename && options.excludes && options.excludes.test(basename));
-        }
-
-        return new Promise(function (resolve, reject, notify) {
-            fs.readdir(folderPath, function (err, files) {
-                if (err) {
-                    var TAG = 'hashFolderPromise(' + foldername + ', ' + directoryPath + '):';
-                    console.error(TAG, err);
-                    reject(err);
-                }
-
-                var children = files.filter(notExcluded).map(function (child) {
-                    return hashElementPromise(child, folderPath, options);
-                });
-
-                return Promise.all(children).then(function (children) {
-                    var hash = new HashedFolder(foldername, children.filter(notUndefined), options);
-                    resolve(hash);
-                });
-            });
-        });
-    }
-
-
-    function hashFilePromise(filename, directoryPath, options) {
-        return new Promise(function (resolve, reject, notify) {
-            try {
-                var hash = crypto.createHash(options.algo);
-                hash.write(filename);
-
-                var f = fs.createReadStream(path.join(directoryPath, filename));
-                f.pipe(hash, { end: false });
-
-                f.on('end', function () {
-                    var hashedFile = new HashedFile(filename, hash, options);
-                    resolve(hashedFile);
-                });
-
-            } catch (ex) {
-                reject(ex);
+        return stat(path.join(dirname, basename)).then(stats => {
+            if (stats.isDirectory()) {
+                return hashFolderPromise(basename, dirname, options);
+            } else if (stats.isFile()) {
+                return hashFilePromise(basename, dirname, options);
+            } else {
+                return {
+                    name: basename,
+                    hash: 'unknown element type'
+                };
             }
         });
     }
 
+    function stat(filepath) {
+        return new Promise((resolve, reject) => {
+            fs.stat(filepath, (err, stats) => {
+                if (err) {
+                    return reject(err);
+                } else {
+                    return resolve(stats);
+                }
+            });
+        });
+    }
 
-    const HashedFolder = function (name, children, options) {
+    function hashFolderPromise(name, dir, options) {
+        const folderPath = path.join(dir, name);
+
+        if (options.skipMatching) {
+            // this is currently only used for the root folder
+            log.match(`skipped '${folderPath}'`);
+            delete options.skipMatching;
+        } else if (ignore(name, folderPath, options.folders)) {
+            return undefined;
+        }
+
+        return readdir(folderPath).then(files => {
+            const children = files.map(child => {
+                return hashElementPromise(child, folderPath, options);
+            });
+
+            return Promise.all(children).then(children => {
+                const hash = new HashedFolder(name, children.filter(notUndefined), options);
+                return hash;
+            });
+        });
+    }
+
+    function readdir(folderPath) {
+        return new Promise((resolve, reject) => {
+            fs.readdir(folderPath, (err, files) => {
+                if (err) {
+                    console.error(err);
+                    return reject(err);
+                } else {
+                    return resolve(files);
+                }
+            });
+        });
+    }
+
+    function hashFilePromise(name, dir, options) {
+        const filePath = path.join(dir, name);
+
+        if (options.skipMatching) {
+            // this is currently only used for the root folder
+            log.match(`skipped '${filePath}'`);
+            delete options.skipMatching;
+        } else if (ignore(name, filePath, options.files)) {
+            return undefined;
+        }
+
+        return new Promise((resolve, reject) => {
+            try {
+                const hash = crypto.createHash(options.algo);
+                hash.write(name);
+
+                const f = fs.createReadStream(filePath);
+                f.pipe(hash, { end: false });
+
+                f.on('end', () => {
+                    const hashedFile = new HashedFile(name, hash, options.encoding);
+                    return resolve(hashedFile);
+                });
+            } catch (ex) {
+                return reject(ex);
+            }
+        });
+    }
+
+    function ignore(name, path, rules) {
+        if (rules.exclude) {
+            if (rules.matchBasename && rules.exclude.test(name)) {
+                log.match(`exclude basename '${path}'`);
+                return true;
+            } else if (rules.matchPath && rules.exclude.test(path)) {
+                log.match(`exclude path '${path}'`);
+                return true;
+            }
+        } else if (rules.include) {
+            if (rules.matchBasename && rules.include.test(name)) {
+                log.match(`include basename '${path}'`);
+                return false;
+            } else if (rules.matchPath && rules.include.test(path)) {
+                log.match(`include path '${path}'`);
+                return false;
+            } else {
+                return true;
+            }
+        }
+
+        log.match(`unmatched '${path}'`);
+        return false;
+    }
+
+    const HashedFolder = function HashedFolder(name, children, options) {
         this.name = name;
         this.children = children;
 
-        var hash = crypto.createHash(options.algo);
+        const hash = crypto.createHash(options.algo);
         hash.write(name);
-        children.forEach(function (child) {
+        children.forEach(child => {
             if (child.hash) {
                 hash.write(child.hash);
             }
         });
 
         this.hash = hash.digest(options.encoding);
-    }
+    };
 
     HashedFolder.prototype.toString = function (padding = '') {
         const first = `${padding}{ name: '${this.name}', hash: '${this.hash},'\n`;
         padding += '  ';
 
-        return `${first}${padding}children: ${this.childrenToString(padding)}}`
-    }
+        return `${first}${padding}children: ${this.childrenToString(padding)}}`;
+    };
 
     HashedFolder.prototype.childrenToString = function (padding = '') {
         if (this.children.length === 0) {
@@ -169,17 +204,16 @@ function prep(fs, Promise) {
                 .join('\n');
             return `[\n${children}\n${padding}]`;
         }
-    }
+    };
 
-
-    const HashedFile = function (name, hash, options) {
+    const HashedFile = function HashedFile(name, hash, encoding) {
         this.name = name;
-        this.hash = hash.digest(options.encoding);
-    }
+        this.hash = hash.digest(encoding);
+    };
 
     HashedFile.prototype.toString = function (padding = '') {
         return padding + '{ name: \'' + this.name + '\', hash: \'' + this.hash + '\' }';
-    }
+    };
 
     return hashElement;
 }
@@ -200,35 +234,42 @@ function parseParameters(args) {
     }
 
     // parse options (fallback default options)
-    if (!isObject(options_)) options_ = {}
+    if (!isObject(options_)) options_ = {};
     const options = {
         algo: options_.algo || defaultOptions.algo,
         encoding: options_.encoding || defaultOptions.encoding,
-        excludes: reduceGlobPatterns(notUndefined(options_.excludes) ? options_.excludes : defaultOptions.excludes),
-        match: Object.assign({}, defaultOptions.match, options_.match),
-    }
+        files: Object.assign({}, defaultOptions.files, options_.files),
+        folders: Object.assign({}, defaultOptions.folders, options_.folders),
+        match: Object.assign({}, defaultOptions.match, options_.match)
+    };
 
-    return Promise.resolve({ basename, dir, options })
+    // transform match globs to Regex
+    options.files.exclude = reduceGlobPatterns(options.files.exclude);
+    options.files.include = reduceGlobPatterns(options.files.include);
+    options.folders.exclude = reduceGlobPatterns(options.folders.exclude);
+    options.folders.include = reduceGlobPatterns(options.folders.include);
+
+    return Promise.resolve(log.params({ basename, dir, options }));
 }
 
 function isString(str) {
-    return (typeof str == 'string' || str instanceof String)
+    return typeof str === 'string' || str instanceof String;
 }
 
 function isObject(obj) {
-    return obj != null && typeof obj === 'object'
+    return obj !== null && typeof obj === 'object';
 }
 
 function notUndefined(obj) {
-    return typeof obj !== undefined;
+    return typeof obj !== 'undefined';
 }
 
 function reduceGlobPatterns(globs) {
-    if (!globs || !Array.isArray(globs) || globs.length == 0) {
+    if (!globs || !Array.isArray(globs) || globs.length === 0) {
         return undefined;
     } else {
         // combine globs into one single RegEx
-        return new RegExp(globs.reduce(function (acc, exclude) {
+        return new RegExp(globs.reduce((acc, exclude) => {
             return acc + '|' + minimatch.makeRe(exclude).source;
         }, '').substr(1));
     }

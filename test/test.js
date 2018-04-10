@@ -13,15 +13,15 @@ const folderHash = require('../index'),
 
 
 describe('Should generate hashes', function () {
-    const json = {}
-    const dir = 'folder', basename = 'file1'
-    json[path.join(dir, basename)] = 'file content'
+    const json = {};
+    const dir = 'folder', basename = 'file1';
+    json[path.join(dir, basename)] = 'file content';
     const hashElement = prep(Volume.fromJSON(json));
 
     const checkHash = result => {
-        should.exist(result)
-        should.exist(result.hash)
-        result.hash.should.equal('11OqJSEmDW280Sst6dycitwlfCI=')
+        should.exist(result);
+        should.exist(result.hash);
+        result.hash.should.equal('11OqJSEmDW280Sst6dycitwlfCI=');
     };
 
     describe('when called as a promise', function () {
@@ -81,15 +81,15 @@ describe('Should generate hashes', function () {
 
     describe('and', function () {
         it('should return a string representation', function () {
-            const fs = Volume.fromJSON({ 'folder/file.txt': 'content', })
-            fs.mkdirSync('folder/empty_folder')
+            const fs = Volume.fromJSON({ 'folder/file.txt': 'content' });
+            fs.mkdirSync('folder/empty_folder');
 
             return prep(fs)('folder').then(hash => {
                 should.exist(hash);
                 const str = hash.toString();
                 should.exist(str);
                 should.equal(str.length > 10, true);
-            })
+            });
         });
     });
 });
@@ -105,15 +105,15 @@ describe('Generating hashes over files, it', function () {
             fs.writeFileSync(file, 'content');
             return hash('file', 'folder').then(result => {
                 result.hash.should.equal(hash1.hash);
-            })
+            });
         });
     });
 
     it('should return the same hash if a file has the same name and content, but exists in a different folder', function () {
         const json = {};
-        json[path.join('folder one', 'file.txt')] = 'not empty'
-        json[path.join('another folder', 'file.txt')] = 'not empty'
-        const hash = prep(Volume.fromJSON(json))
+        json[path.join('folder one', 'file.txt')] = 'not empty';
+        json[path.join('another folder', 'file.txt')] = 'not empty';
+        const hash = prep(Volume.fromJSON(json));
 
         return Promise.all([
             hash(path.join('folder one', 'file.txt')),
@@ -124,9 +124,9 @@ describe('Generating hashes over files, it', function () {
 
     it('should return a different hash if the file has the same name but a different content', function () {
         const json = {};
-        json[path.join('folder1', 'file.txt')] = '1st file'
-        json[path.join('folder2', 'file.txt')] = '2nd file'
-        const hash = prep(Volume.fromJSON(json))
+        json[path.join('folder1', 'file.txt')] = '1st file';
+        json[path.join('folder2', 'file.txt')] = '2nd file';
+        const hash = prep(Volume.fromJSON(json));
 
         return Promise.all([
             hash('file.txt', 'folder1'),
@@ -139,8 +139,8 @@ describe('Generating hashes over files, it', function () {
         const hash = prep(Volume.fromJSON({ 'one': 'content', 'two': 'content' }));
         return Promise.all([hash('one'), hash('two')])
             .then(results => {
-                return results[0].hash.should.not.equal(results[1].hash)
-            })
+                return results[0].hash.should.not.equal(results[1].hash);
+            });
     });
 });
 
@@ -158,7 +158,7 @@ describe('Generating a hash over a folder, it', function () {
             'abc/ghi/jkl/file.js': 'content',
             'abc/ghi/jkl/file2.js': 'content',
             'abc/ghi/folder/data.json': 'content',
-            'abc/ghi/folder/subfolder/today.log': 'content',
+            'abc/ghi/folder/subfolder/today.log': 'content'
         }));
 
         const checkChildren = current => {
@@ -168,7 +168,7 @@ describe('Generating a hash over a folder, it', function () {
             }
         };
 
-        return hashElement('abc').then(checkChildren)
+        return hashElement('abc').then(checkChildren);
     });
 
     it('generates different hashes if the folders have the same content but different names', function () {
@@ -234,17 +234,28 @@ describe('Generating a hash over a folder, it', function () {
             '3rd/base/dummy': '',
             '3rd/base/folder/file3': 'abcd'
         }));
-        const options = { excludes: ['file2'] };
 
         return Promise.all([
-            hashElement('base', options),
-            hashElement(path.join('2nd', 'base'), options),
-            hashElement('base', '3rd', { excludes: ['dummy'] })
+            hashElement('base', {
+                files: {
+                    exclude: ['**/file2', '**file2'], matchBasename: false, matchPath: true
+                }
+            }),
+            hashElement(path.join('2nd', 'base'), {
+                files: {
+                    exclude: ['file2'], matchBasename: true, matchPath: false
+                }
+            }),
+            hashElement('base', '3rd', {
+                files: {
+                    exclude: ['dummy'], matchBasename: true, matchPath: false
+                }
+            })
         ]).then(result => {
             should.exist(result[0].hash);
             result[0].hash.should.equal(result[1].hash);
             result[1].hash.should.equal(result[2].hash);
-        })
+        });
     });
 
     it('generates the same hash if all differences are ignored', function () {
@@ -257,19 +268,108 @@ describe('Generating a hash over a folder, it', function () {
             '2nd/base/folder/.git/one': '1',
             '3rd/base/file1': 'content',
             '3rd/base/folder/file2': '2',
-            '3rd/base/folder/.hidden': 'hidden'
+            '3rd/base/folder/.hidden': 'hidden',
+            '3rd/base/.hidden/file': 'hidden'
         }));
-        const options = { excludes: ['**/.*', '.*'] };
 
         return Promise.all([
-            hashElement('base', options),
-            hashElement(path.join('2nd', 'base'), options),
-            hashElement('base', '3rd', options)
+            hashElement('base', {
+                files: {
+                    exclude: ['**/.*', '**\.*'],
+                    matchBasename: false, matchPath: true
+                }
+            }),
+            hashElement(path.join('2nd', 'base'), {
+                folders: {
+                    exclude: ['**\/.*', '**\.*'],
+                    matchBasename: false, matchPath: true
+                }
+            }),
+            hashElement('base', '3rd', {
+                files: { exclude: ['.*'] },
+                folders: { exclude: ['.*'] }
+            })
         ]).then(result => {
             should.exist(result[0].hash);
             result[0].hash.should.equal(result[1].hash);
             result[1].hash.should.equal(result[2].hash);
+        });
+    });
+
+    it('ignores a folder it is both included and excluded', function () {
+        const hashElement = prep(Volume.fromJSON({
+            'base/file1': 'content',
+            'base/folder/file2': '2',
+            'base/folder2/file3': '3'
+        }));
+
+        return hashElement('base', {
+            folders: {
+                exclude: ['**/folder', '**folder'], include: ['*'],
+                matchBasename: false, matchPath: true
+            }
         })
+            .then(result => {
+                should.exist(result.hash);
+                should.exist(result.children);
+                result.children.length.should.equal(2);
+                result.children[0].name.should.equal('file1');
+                result.children[1].name.should.equal('folder2');
+            });
+    });
+
+    it('only includes the wanted folders', function () {
+        const hashElement = prep(Volume.fromJSON({
+            'abc/file': 'content',
+            'def/file': 'content',
+            'abc2/file': 'content',
+            'abc3/file': 'content'
+        }));
+
+        return Promise.all([
+            hashElement('./', {
+                folders: {
+                    include: ['abc*'], matchBasename: true, matchPath: false
+                }
+            }),
+            hashElement('./', {
+                folders: {
+                    include: ['**abc*'], matchBasename: false, matchPath: true
+                }
+            })
+        ]).then(result => {
+            should.exist(result[0].children);
+            result[0].children.length.should.equal(3);
+            result[0].hash.should.equal(result[1].hash);
+        });
+    });
+
+    it('only includes the wanted files', function () {
+        const hashElement = prep(Volume.fromJSON({
+            'file1.js': 'file1',
+            'file1.abc.js': 'content',
+            'file1.js.ext': 'ignore',
+            'def/file1.js': 'content',
+            'def/file1.json': 'ignore'
+        }));
+
+        return Promise.all([
+            hashElement('./', {
+                files: {
+                    include: ['*.js'], matchBasename: true, matchPath: false
+                }
+            }),
+            hashElement('./', {
+                files: {
+                    include: ['**/*.js', '**.js'],
+                    matchBasename: false, matchPath: true
+                }
+            })
+        ]).then(result => {
+            //console.log(result.map(r => r.toString()).join('\n'));
+            should.exist(result[0].children);
+            result[0].children.length.should.equal(3);
+            result[0].hash.should.equal(result[1].hash);
+        });
     });
 });
-
