@@ -65,7 +65,7 @@ const options = {
         include: ['*.js', '**/*.js', '*.json', '**/*.json'], // *nix
         matchBasename: false, matchPath: true
     }
-};}
+};
 ```
 
 
