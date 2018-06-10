@@ -16,7 +16,8 @@ const defaultOptions = {
         exclude: [],
         include: [],
         matchBasename: true,
-        matchPath: false
+        matchPath: false,
+        ignoreRootName: false
     }
 };
 
@@ -37,7 +38,7 @@ function prep(fs, Promise) {
             .then(({ basename, dir, options }) => {
                 // this is only used for the root level
                 options.skipMatching = true;
-                return hashElementPromise(basename, dir, options);
+                return hashElementPromise(basename, dir, options, true);
             })
             .then(result => {
                 if (typeof callback === 'function') {
@@ -55,10 +56,10 @@ function prep(fs, Promise) {
             });
     }
 
-    function hashElementPromise(basename, dirname, options) {
+    function hashElementPromise(basename, dirname, options, isRootElement = false) {
         return stat(path.join(dirname, basename)).then(stats => {
             if (stats.isDirectory()) {
-                return hashFolderPromise(basename, dirname, options);
+                return hashFolderPromise(basename, dirname, options, isRootElement);
             } else if (stats.isFile()) {
                 return hashFilePromise(basename, dirname, options);
             } else {
@@ -82,7 +83,7 @@ function prep(fs, Promise) {
         });
     }
 
-    function hashFolderPromise(name, dir, options) {
+    function hashFolderPromise(name, dir, options, isRootElement = false) {
         const folderPath = path.join(dir, name);
 
         if (options.skipMatching) {
@@ -99,7 +100,7 @@ function prep(fs, Promise) {
             });
 
             return Promise.all(children).then(children => {
-                const hash = new HashedFolder(name, children.filter(notUndefined), options);
+                const hash = new HashedFolder(name, children.filter(notUndefined), options, isRootElement);
                 return hash;
             });
         });
@@ -172,12 +173,14 @@ function prep(fs, Promise) {
         return false;
     }
 
-    const HashedFolder = function HashedFolder(name, children, options) {
+    const HashedFolder = function HashedFolder(name, children, options, isRootElement = false) {
         this.name = name;
         this.children = children;
 
         const hash = crypto.createHash(options.algo);
-        hash.write(name);
+        if (!isRootElement || !options.folders.ignoreRootName) {
+            hash.write(name);
+        }
         children.forEach(child => {
             if (child.hash) {
                 hash.write(child.hash);
