@@ -10,7 +10,8 @@ const defaultOptions = {
         exclude: [],
         include: [],
         matchBasename: true,
-        matchPath: false
+        matchPath: false,
+        ignoreRootName: false
     },
     folders: {
         exclude: [],
@@ -61,7 +62,7 @@ function prep(fs, Promise) {
             if (stats.isDirectory()) {
                 return hashFolderPromise(basename, dirname, options, isRootElement);
             } else if (stats.isFile()) {
-                return hashFilePromise(basename, dirname, options);
+                return hashFilePromise(basename, dirname, options, isRootElement);
             } else {
                 return {
                     name: basename,
@@ -119,7 +120,7 @@ function prep(fs, Promise) {
         });
     }
 
-    function hashFilePromise(name, dir, options) {
+    function hashFilePromise(name, dir, options, isRootElement = false) {
         const filePath = path.join(dir, name);
 
         if (options.skipMatching) {
@@ -133,7 +134,11 @@ function prep(fs, Promise) {
         return new Promise((resolve, reject) => {
             try {
                 const hash = crypto.createHash(options.algo);
-                hash.write(name);
+                if (isRootElement && options.files.ignoreRootName) {
+                    log.match(`omitted name of ${filePath} from hash`)
+                } else {
+                    hash.write(name);
+                }
 
                 const f = fs.createReadStream(filePath);
                 f.pipe(hash, { end: false });
@@ -178,7 +183,9 @@ function prep(fs, Promise) {
         this.children = children;
 
         const hash = crypto.createHash(options.algo);
-        if (!isRootElement || !options.folders.ignoreRootName) {
+        if (isRootElement && options.folders.ignoreRootName) {
+            log.match(`omitted name of folder ${name} from hash`)
+        } else {
             hash.write(name);
         }
         children.forEach(child => {

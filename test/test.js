@@ -142,6 +142,19 @@ describe('Generating hashes over files, it', function () {
                 return results[0].hash.should.not.equal(results[1].hash);
             });
     });
+
+    it('generates the same hash if only the name differs and ignoreRootName is set', async function () {
+        const hashElement = prep(Volume.fromJSON({
+            'abc.txt': 'awesome content',
+            'def/ghi.js': 'awesome content',
+        }));
+        const options = {  files: { ignoreRootName: true } };
+
+        const abc = await hashElement('abc.txt', options);
+        const def = await hashElement('def/ghi.js', options);
+
+        abc.hash.should.equal(def.hash);
+    });
 });
 
 describe('Generating a hash over a folder, it', function () {
@@ -373,7 +386,7 @@ describe('Generating a hash over a folder, it', function () {
         });
     });
 
-    it('generates the same hash if the folders only differ in name and their name will not be considered for the hash', async function () {
+    it('generates the same hash if the folders only differ in name and ignoreRootName is set', async function () {
         const hashElement = prep(Volume.fromJSON({
             'abc/def/ghi': 'content of ghi',
             'abc/file1.js': '//just a comment',
