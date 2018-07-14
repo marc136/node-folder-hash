@@ -1,6 +1,4 @@
-﻿# folder-hash
-
-Create a hash checksum over a folder or a file.  
+﻿Create a hash checksum over a folder or a file.  
 The hashes are propagated upwards, the hash that is returned for a folder is generated over all the hashes of its children.  
 The hashes are generated with the _sha1_ algorithm and returned in _base64_ encoding by default.
 
@@ -212,13 +210,15 @@ hashElement(__dirname, options, (error, hash) => {
         exclude: [],
         include: [],
         matchBasename: true,
-        matchPath: false
+        matchPath: false,
+        ignoreRootName: false
     },
     folders: {
         exclude: [],
         include: [],
         matchBasename: true,
-        matchPath: false
+        matchPath: false,
+        ignoreRootName: false
     }
 }
 ```
