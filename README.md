@@ -351,6 +351,19 @@ hashElement(__dirname, options, (error, hash) => {
             </td>
             <td>Match the glob patterns to the file/folder path</td>
         </tr>
+        <tr>
+            <td>ignoreRootName</td>
+            <td>
+                <span>bool</span>
+            </td>
+            <td>
+                &lt;optional&gt;<br>
+            </td>
+            <td>
+                false
+            </td>
+            <td>Set to true to calculate the hash without the basename of the root (first) element</td>
+        </tr>
     </tbody>
 </table>
 
