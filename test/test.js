@@ -143,17 +143,19 @@ describe('Generating hashes over files, it', function () {
             });
     });
 
-    it('generates the same hash if only the name differs and ignoreRootName is set', async function () {
+    it('generates the same hash if only the name differs and ignoreRootName is set', function () {
         const hashElement = prep(Volume.fromJSON({
             'abc.txt': 'awesome content',
             'def/ghi.js': 'awesome content',
         }));
         const options = {  files: { ignoreRootName: true } };
 
-        const abc = await hashElement('abc.txt', options);
-        const def = await hashElement('def/ghi.js', options);
-
-        abc.hash.should.equal(def.hash);
+        return Promise.all([
+            hashElement('abc.txt', options),
+            hashElement('def/ghi.js', options)
+        ]).then(function (hashes) { 
+            return hashes[0].hash.should.equal(hashes[1].hash);
+        });
     });
 });
 
@@ -386,7 +388,7 @@ describe('Generating a hash over a folder, it', function () {
         });
     });
 
-    it('generates the same hash if the folders only differ in name and ignoreRootName is set', async function () {
+    it('generates the same hash if the folders only differ in name and ignoreRootName is set', function () {
         const hashElement = prep(Volume.fromJSON({
             'abc/def/ghi': 'content of ghi',
             'abc/file1.js': '//just a comment',
@@ -399,9 +401,11 @@ describe('Generating a hash over a folder, it', function () {
             files: { exclude: ['.*'] } 
         };
 
-        const abc = await hashElement('abc', options);
-        const def = await hashElement('def', options);
-
-        abc.hash.should.equal(def.hash);
+        return Promise.all([
+            hashElement('abc', options),
+            hashElement('def', options)
+        ]).then(function (hashes) { 
+            return hashes[0].hash.should.equal(hashes[1].hash);
+        });
     });
 });
