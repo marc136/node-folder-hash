@@ -1,6 +1,6 @@
 {
   "name": "folder-hash",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "Create a hash checksum over a folder and its content - its children and their content",
   "main": "index.js",
   "scripts": {
@@ -32,6 +32,6 @@
     "mocha": "^5.0.5"
   },
   "engines": {
-    "node": ">=7.0.0"
+    "node": ">=6.0.0"
   }
 }
