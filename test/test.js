@@ -237,6 +237,25 @@ describe('Generating a hash over a folder, it', function () {
         });
     });
 
+    it('generates the same hash if the folders have the same content but different file order', function () {
+        const hashElement = prep(Volume.fromJSON({
+            'first/file1': 'content',
+            'first/folder/file2': 'abc',
+            'first/folder/file3': 'abcd',
+            '2nd/folder/first/file1': 'content',
+            '2nd/folder/first/folder/file3': 'abcd',
+            '2nd/folder/first/folder/file2': 'abc'
+        }));
+
+        return Promise.all([
+            hashElement('first'),
+            hashElement('first', path.join('2nd', 'folder'))
+        ]).then(([first, second]) => {
+            should.exist(first.hash);
+            first.hash.should.equal(second.hash);
+        });
+    })
+
     it('generates the same hash if the only file with different content is ignored', function () {
         const hashElement = prep(Volume.fromJSON({
             'base/file1': 'content',

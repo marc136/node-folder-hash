@@ -114,7 +114,7 @@ function prep(fs, Promise) {
                     console.error(err);
                     return reject(err);
                 } else {
-                    return resolve(files);
+                    return resolve(files.sort());
                 }
             });
         });
