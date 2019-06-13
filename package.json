@@ -33,7 +33,7 @@
   "devDependencies": {
     "chai": "^4.0.2",
     "chai-as-promised": "^7.1.1",
-    "jsdoc": "3.5.5",
+    "jsdoc": "3.6.2",
     "memfs": "^2.8.0",
     "mocha": "^6.0.2",
     "nyc": "^13.3.0"
