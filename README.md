@@ -8,8 +8,9 @@ Each file returns a name and a hash, and each folder returns additionally an arr
 First, install folder-hash with `npm install --save folder-hash` or `yarn add folder-hash`.  
 
 ### Simple example
-See file *./examples/readme-example1.js*.  
-This example excludes all files and folders starting with a dot, (e.g. *.git/* and *.gitignore*), the *node_modules* folder.  
+To see differences to the last version of this package, I would create hashes over all *.js* and *.json* files. But ignore everything inside folders starting wiht a dot, and also from the folders *node_modules*, *test_coverage*. The structure of the options object is documented <a href="#options">on this page.</a>  
+This example is also stored in [./examples/readme-example1.js](/examples/readme-example1.js).  
+
 
 ```js
 const { hashElement } = require('folder-hash');
@@ -50,10 +51,10 @@ Creating a hash over the current folder:
       ]}
   ]}
 ```
-
+And the structure may be traversed to e.g. create incremental backups.
 
 It is also possible to only match the full path and not the basename. The same configuration could look like this:  
-_But unfortunately *nix and Windows behave differently, so please use caution._
+_You should be aware that *nix and Windows behave differently, so please use caution._
 ```js
 const options = {
     folders: {
@@ -68,81 +69,6 @@ const options = {
 };
 ```
 
-
-### Other examples using promises
-See file *./examples/readme-with-promises.js*
-```js
-const path = require('path');
-const { hashElement } = require('folder-hash');
-
-// pass element name and folder path separately
-hashElement('test', path.join(__dirname, '..'))
-  .then(hash => {
-    console.log('Result for folder "../test":', hash.toString(), '\n');
-  })
-  .catch(error => {
-    return console.error('hashing failed:', error);
-  });
-
-// pass element path directly
-hashElement(__dirname)
-  .then(hash => {
-    console.log(`Result for folder "${__dirname}":`);
-    console.log(hash.toString(), '\n');
-  })
-  .catch(error => {
-    return console.error('hashing failed:', error);
-  });
-
-// pass options (example: exclude dotFolders)
-const options = { encoding: 'hex', folders: { exclude: ['.*'] } };
-hashElement(__dirname, options)
-  .then(hash => {
-    console.log('Result for folder "' + __dirname + '" (with options):');
-    console.log(hash.toString(), '\n');
-  })
-  .catch(error => {
-    return console.error('hashing failed:', error);
-  });
-```
-
-### Other examples using error-first callbacks
-See *./examples/readme-with-callbacks.js*
-
-```js
-const path = require('path');
-const { hashElement } = require('folder-hash');
-
-// pass element name and folder path separately
-hashElement('test', path.join(__dirname, '..'), (error, hash) => {
-    if (error) {
-        return console.error('hashing failed:', error);
-    } else {
-        console.log('Result for folder "../test":', hash.toString(), '\n');
-    }
-});
-
-// pass element path directly
-hashElement(__dirname, (error, hash) => {
-    if (error) {
-        return console.error('hashing failed:', error);
-    } else {
-        console.log('Result for folder "' + __dirname + '":');
-        console.log(hash.toString(), '\n');
-    }
-});
-
-// pass options (example: exclude dotFiles)
-const options = { algo: 'md5', files: { exclude: ['.*'], matchBasename: true } };
-hashElement(__dirname, options, (error, hash) => {
-    if (error) {
-        return console.error('hashing failed:', error);
-    } else {
-        console.log('Result for folder "' + __dirname + '":');
-        console.log(hash.toString());
-    }
-});
-```
 
 ### Parameters for the hashElement function
 
@@ -184,7 +110,7 @@ hashElement(__dirname, options, (error, hash) => {
                 &lt;optional&gt;<br>
             </td>
             <td>
-                Options object (see below)
+                <a href="#options">Options object (see below)</a>
             </td>
         </tr>
         <tr>
@@ -200,8 +126,8 @@ hashElement(__dirname, options, (error, hash) => {
     </tbody>
 </table>
 
-#### Options object properties
-##### Default values
+## Options
+### Default values
 ```js
 {
     algo: 'sha1',       // see crypto.getHashes() for options
@@ -269,7 +195,7 @@ hashElement(__dirname, options, (error, hash) => {
                 &lt;optional&gt;<br>
             </td>
             <td colspan="2">
-                Rules object (see below)
+                <a href="#rules-object-properties">Rules object (see below)</a>
             </td>
         </tr>
         <tr>
@@ -281,7 +207,7 @@ hashElement(__dirname, options, (error, hash) => {
                 &lt;optional&gt;<br>
             </td>
             <td colspan="2">
-                Rules object (see below)
+                <a href="#rules-object-properties">Rules object (see below)</a>
             </td>
         </tr>
     </tbody>
@@ -368,12 +294,89 @@ hashElement(__dirname, options, (error, hash) => {
 </table>
 
 
+## Examples
+### Other examples using promises
+See file *./examples/readme-with-promises.js*
+```js
+const path = require('path');
+const { hashElement } = require('folder-hash');
+
+// pass element name and folder path separately
+hashElement('test', path.join(__dirname, '..'))
+  .then(hash => {
+    console.log('Result for folder "../test":', hash.toString(), '\n');
+  })
+  .catch(error => {
+    return console.error('hashing failed:', error);
+  });
+
+// pass element path directly
+hashElement(__dirname)
+  .then(hash => {
+    console.log(`Result for folder "${__dirname}":`);
+    console.log(hash.toString(), '\n');
+  })
+  .catch(error => {
+    return console.error('hashing failed:', error);
+  });
+
+// pass options (example: exclude dotFolders)
+const options = { encoding: 'hex', folders: { exclude: ['.*'] } };
+hashElement(__dirname, options)
+  .then(hash => {
+    console.log('Result for folder "' + __dirname + '" (with options):');
+    console.log(hash.toString(), '\n');
+  })
+  .catch(error => {
+    return console.error('hashing failed:', error);
+  });
+```
+
+### Other examples using error-first callbacks
+See *./examples/readme-with-callbacks.js*
+
+```js
+const path = require('path');
+const { hashElement } = require('folder-hash');
+
+// pass element name and folder path separately
+hashElement('test', path.join(__dirname, '..'), (error, hash) => {
+    if (error) {
+        return console.error('hashing failed:', error);
+    } else {
+        console.log('Result for folder "../test":', hash.toString(), '\n');
+    }
+});
+
+// pass element path directly
+hashElement(__dirname, (error, hash) => {
+    if (error) {
+        return console.error('hashing failed:', error);
+    } else {
+        console.log('Result for folder "' + __dirname + '":');
+        console.log(hash.toString(), '\n');
+    }
+});
+
+// pass options (example: exclude dotFiles)
+const options = { algo: 'md5', files: { exclude: ['.*'], matchBasename: true } };
+hashElement(__dirname, options, (error, hash) => {
+    if (error) {
+        return console.error('hashing failed:', error);
+    } else {
+        console.log('Result for folder "' + __dirname + '":');
+        console.log(hash.toString());
+    }
+});
+```
+
+
 ## Behavior
 The behavior is documented and verified in the unit tests. Execute `npm test` or `mocha test`, and have a look at the _test_ subfolder.  
 You can also have a look at the [CircleCI report. ![CircleCI](https://circleci.com/gh/marc136/node-folder-hash/tree/master.svg?style=svg)](https://circleci.com/gh/marc136/node-folder-hash/tree/master)
 
 
-### Creating hashes over files
+### Creating hashes over files (with default options)
 **The hashes are the same if:**
 
 - A file is checked again
@@ -385,7 +388,7 @@ You can also have a look at the [CircleCI report. ![CircleCI](https://circleci.c
 - Two files have the same name but different content
 - Two files have the same content but different names
 
-### Creating hashes over folders
+### Creating hashes over folders (with default options)
 Content means in this case a folder's children - both the files and the subfolders with their children.
 
 **The hashes are the same if:**
