@@ -270,7 +270,7 @@ describe('Generating a hash over a folder, it', function () {
         });
     });
 
-    it.only('generates the same hash if the folders only differ in name and ignoreBasename is set', function () {
+    it('generates the same hash if the folders only differ in name and ignoreBasename is set', function () {
         const hashElement = prep(Volume.fromJSON({
             'abc/def/ghi': 'content of ghi',
             'abc/file1.js': '//just a comment',
