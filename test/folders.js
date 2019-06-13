@@ -269,4 +269,25 @@ describe('Generating a hash over a folder, it', function () {
             return hashes[0].hash.should.equal(hashes[1].hash);
         });
     });
+
+    it.only('generates the same hash if the folders only differ in name and ignoreBasename is set', function () {
+        const hashElement = prep(Volume.fromJSON({
+            'abc/def/ghi': 'content of ghi',
+            'abc/file1.js': '//just a comment',
+            'def/def/ghi': 'content of ghi',
+            'def/file1.js': '//just a comment',
+            'def/def/.ignored': 'ignored'
+        }));
+        const options = { 
+            folders: { ignoreBasename: true },
+            files: { exclude: ['.*'] } 
+        };
+
+        return Promise.all([
+            hashElement('abc', options),
+            hashElement('def', options)
+        ]).then(function (hashes) { 
+            return hashes[1].hash.should.equal(hashes[0].hash);
+        });
+    });
 });
