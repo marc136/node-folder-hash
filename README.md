@@ -137,6 +137,7 @@ const options = {
         include: [],
         matchBasename: true,
         matchPath: false,
+        ignoreBasename: false,
         ignoreRootName: false
     },
     folders: {
@@ -276,6 +277,19 @@ const options = {
                 false
             </td>
             <td>Match the glob patterns to the file/folder path</td>
+        </tr>
+        <tr>
+            <td>ignoreBasename</td>
+            <td>
+                <span>bool</span>
+            </td>
+            <td>
+                &lt;optional&gt;<br>
+            </td>
+            <td>
+                false
+            </td>
+            <td>Set to true to calculate the hash without the basename element</td>
         </tr>
         <tr>
             <td>ignoreRootName</td>

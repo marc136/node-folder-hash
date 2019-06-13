@@ -11,6 +11,7 @@ const defaultOptions = {
         include: [],
         matchBasename: true,
         matchPath: false,
+        ignoreBasename: false,
         ignoreRootName: false
     },
     folders: {
@@ -18,6 +19,7 @@ const defaultOptions = {
         include: [],
         matchBasename: true,
         matchPath: false,
+        ignoreBasename: false,
         ignoreRootName: false
     }
 };
@@ -134,7 +136,9 @@ function prep(fs, Promise) {
         return new Promise((resolve, reject) => {
             try {
                 const hash = crypto.createHash(options.algo);
-                if (isRootElement && options.files.ignoreRootName) {
+                if (options.files.ignoreBasename ||
+                    (isRootElement && options.files.ignoreRootName))
+                {
                     log.match(`omitted name of ${filePath} from hash`)
                 } else {
                     hash.write(name);
@@ -183,7 +187,9 @@ function prep(fs, Promise) {
         this.children = children;
 
         const hash = crypto.createHash(options.algo);
-        if (isRootElement && options.folders.ignoreRootName) {
+        if (options.folders.ignoreBasename || 
+            (isRootElement && options.folders.ignoreRootName))
+        {
             log.match(`omitted name of folder ${name} from hash`)
         } else {
             hash.write(name);

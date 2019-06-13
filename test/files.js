@@ -63,4 +63,18 @@ describe('Generating hashes over files, it', function () {
             return hashes[0].hash.should.equal(hashes[1].hash);
         });
     });
+
+    it('generates the same hash if ignoreBasename is true and the files have the same content', function () {
+        const hashElement = prep(Volume.fromJSON({
+            'abc': 'awesome content',
+            'def/ghi.js': 'awesome content',
+        }));
+        const options = {  files: { ignoreBasename: true } };
+        return Promise.all([
+            hashElement('abc', options),
+            hashElement('def/ghi.js', options)
+        ]).then(function (hashes) { 
+            return hashes[0].hash.should.equal(hashes[1].hash);
+        });
+    });
 });
