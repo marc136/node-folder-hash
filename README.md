@@ -229,7 +229,7 @@ const options = {
         <tr>
             <td>exclude</td>
             <td>
-                <span>Array.&lt;string&gt;</span>
+                <span>Array.&lt;string&gt; || Function</span>
             </td>
             <td>
                 &lt;optional&gt;<br>
@@ -237,12 +237,12 @@ const options = {
             <td>
                 []
             </td>
-            <td>Array of optional exclude glob patterns, see <a href="https://github.com/isaacs/minimatch#features">minimatch doc</a></td>
+            <td>Array of optional exclude glob patterns, see <a href="https://github.com/isaacs/minimatch#features">minimatch doc</a>. Can also be a function which returns true if the passed file is excluded.</td>
         </tr>
         <tr>
             <td>include</td>
             <td>
-                <span>Array.&lt;string&gt;</span>
+                <span>Array.&lt;string&gt; || Function</span>
             </td>
             <td>
                 &lt;optional&gt;<br>
@@ -250,7 +250,7 @@ const options = {
             <td>
                 []
             </td>
-            <td>Array of optional include glob patterns, see <a href="https://github.com/isaacs/minimatch#features">minimatch doc</a></td>
+            <td>Array of optional include glob patterns, see <a href="https://github.com/isaacs/minimatch#features">minimatch doc</a>. Can also be a function which returns true if the passed file is included.</td>
         </tr>
         <tr>
             <td>matchBasename</td>

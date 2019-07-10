@@ -28,6 +28,29 @@ describe('Generating a hash over a folder, it', function () {
         return hashElement('abc').then(checkChildren);
     });
 
+    it('ignores things with an exclude function', function () {
+        const hashElement = prep(Volume.fromJSON({
+            'abc/def': 'abc/def',
+            'abc/ghi/jkl/file.js': 'content',
+            'abc/ghi/jkl/file2.js': 'content',
+            'abc/ghi/folder/data.json': 'content',
+            'abc/ghi/folder/subfolder/today.log': 'content'
+        }));
+
+        const options = {
+          folders: {
+            exclude: path => path.includes('ghi')
+          }
+        };
+
+        const checkChildren = current => {
+            current.children.length.should.equal(1);
+            current.children[0].name.should.equal('def');
+        };
+
+        return hashElement('abc', options).then(checkChildren);
+    });
+
     it('generates different hashes if the folders have the same content but different names', function () {
         const hashElement = prep(Volume.fromJSON({
             'folder1/file1': 'content',

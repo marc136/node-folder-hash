@@ -159,18 +159,18 @@ function prep(fs, Promise) {
 
     function ignore(name, path, rules) {
         if (rules.exclude) {
-            if (rules.matchBasename && rules.exclude.test(name)) {
+            if (rules.matchBasename && rules.exclude(name)) {
                 log.match(`exclude basename '${path}'`);
                 return true;
-            } else if (rules.matchPath && rules.exclude.test(path)) {
+            } else if (rules.matchPath && rules.exclude(path)) {
                 log.match(`exclude path '${path}'`);
                 return true;
             }
         } else if (rules.include) {
-            if (rules.matchBasename && rules.include.test(name)) {
+            if (rules.matchBasename && rules.include(name)) {
                 log.match(`include basename '${path}'`);
                 return false;
-            } else if (rules.matchPath && rules.include.test(path)) {
+            } else if (rules.matchPath && rules.include(path)) {
                 log.match(`include path '${path}'`);
                 return false;
             } else {
@@ -281,13 +281,17 @@ function notUndefined(obj) {
 }
 
 function reduceGlobPatterns(globs) {
-    if (!globs || !Array.isArray(globs) || globs.length === 0) {
+    if (typeof globs === 'function') {
+      return globs;
+    }
+    else if (!globs || !Array.isArray(globs) || globs.length === 0) {
         return undefined;
     } else {
         // combine globs into one single RegEx
-        return new RegExp(globs.reduce((acc, exclude) => {
+        const regex = new RegExp(globs.reduce((acc, exclude) => {
             return acc + '|' + minimatch.makeRe(exclude).source;
         }, '').substr(1));
+        return param => regex.test(param);
     }
 }
 
