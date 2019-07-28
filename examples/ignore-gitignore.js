@@ -1,17 +1,17 @@
 /**
- * Shows how the exlcude option can be used with a function.
+ * Shows how the exclude option can be used with a function.
  * 
  * Real-life usage could be to exclude gitignored files
  */
 
-const { hashElement } = require('../index')
+const { hashElement } = require('../index');
 const fs = require('fs');
-const ignore = require('ignore'); 
+const ignore = require('ignore');
 
 const gitignoreContents = fs.readFileSync('../.gitignore').toString().split('\n');
 const ig = ignore().add(gitignoreContents);
 
-function shouldExclude(name){
+function shouldExclude(name) {
   return ig.ignores(name);
 }
 
