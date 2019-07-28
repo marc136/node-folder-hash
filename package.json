@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "debug": "^4.1.1",
-    "graceful-fs": "~4.1.11",
+    "graceful-fs": "~4.2.0",
     "minimatch": "~3.0.4"
   },
   "devDependencies": {
