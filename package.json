@@ -3,6 +3,9 @@
   "version": "3.2.0",
   "description": "Create a hash checksum over a folder and its content - its children and their content",
   "main": "index.js",
+  "bin": {
+    "folder-hash": "bin/folder-hash"
+  },
   "scripts": {
     "start": "node sample.js",
     "test": "mocha --reporter spec test",
