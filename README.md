@@ -307,6 +307,29 @@ const options = {
     </tbody>
 </table>
 
+## Command line usage
+After installing it globally via
+```
+$ npm install -g folder-hash
+```
+You can use it like this:
+```
+# local folder
+$ folder-hash -c config.json .
+# local folder
+$ folder-hash
+# global folder
+$ folder-hash /user/bin
+```
+
+It also allows to pass an optional JSON configuration file with the `-c` or `--config` flag, which should contain the same configuration as when using the JavaScript API.
+
+You can also use a local version of folder-hash like this:
+```
+$ npx folder-hash --help
+Use folder-hash on cli like this:
+  folder-hash [--config <json-file>] <file-or-folder>
+```
 
 ## Examples
 ### Other examples using promises
