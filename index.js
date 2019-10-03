@@ -296,6 +296,7 @@ function reduceGlobPatterns(globs) {
 }
 
 module.exports = {
+    defaults: defaultOptions,
     hashElement: prep(require("graceful-fs"), Promise),
     // exposed for testing
     prep: prep,
