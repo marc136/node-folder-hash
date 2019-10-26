@@ -1,6 +1,6 @@
 {
   "name": "folder-hash",
-  "version": "3.3.0",
+  "version": "3.3.1",
   "description": "Create a hash checksum over a folder and its content - its children and their content",
   "main": "index.js",
   "bin": {
