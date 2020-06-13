@@ -153,7 +153,7 @@ function prep(fs) {
             }
         }
 
-        log.match(`unmatched '${path}'`);
+        log.match(`Will not ignore unmatched '${path}'`);
         return false;
     }
 
