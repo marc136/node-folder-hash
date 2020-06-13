@@ -17,6 +17,11 @@
     "email": "walter.marc@outlook.com"
   },
   "license": "MIT",
+  "files": [
+    "cli.js",
+    "index.js",
+    "bin"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/marc136/node-folder-hash.git"
