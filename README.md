@@ -8,7 +8,7 @@ Each file returns a name and a hash, and each folder returns additionally an arr
 First, install folder-hash with `npm install --save folder-hash` or `yarn add folder-hash`.  
 
 ### Simple example
-To see differences to the last version of this package, I would create hashes over all *.js* and *.json* files. But ignore everything inside folders starting wiht a dot, and also from the folders *node_modules*, *test_coverage*. The structure of the options object is documented <a href="#options">on this page.</a>  
+To see differences to the last version of this package, I would create hashes over all *.js* and *.json* files. But ignore everything inside folders starting with a dot, and also from the folders *node_modules*, *test_coverage*. The structure of the options object is documented <a href="#options">below.</a>  
 This example is also stored in [./examples/readme-example1.js](/examples/readme-example1.js).  
 
 
