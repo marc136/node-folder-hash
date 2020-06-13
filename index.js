@@ -44,14 +44,14 @@ function prep(fs, Promise) {
                 return hashElementPromise(basename, dir, options, true);
             })
             .then(result => {
-                if (typeof callback === 'function') {
+                if (isFunction(callback)) {
                     return callback(undefined, result);
                 } else {
                     return result;
                 }
             })
             .catch(reason => {
-                if (typeof callback === 'function') {
+                if (isFunction(callback)) {
                     return callback(reason);
                 } else {
                     throw reason;
@@ -268,6 +268,10 @@ function parseParameters(args) {
     return Promise.resolve(log.params({ basename, dir, options }));
 }
 
+function isFunction(any) {
+    return typeof any === 'function';
+}
+
 function isString(str) {
     return typeof str === 'string' || str instanceof String;
 }
@@ -281,7 +285,7 @@ function notUndefined(obj) {
 }
 
 function reduceGlobPatterns(globs) {
-    if (typeof globs === 'function') {
+    if (isFunction(globs)) {
       return globs;
     }
     else if (!globs || !Array.isArray(globs) || globs.length === 0) {
