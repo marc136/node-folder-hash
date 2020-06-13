@@ -8,7 +8,7 @@ const { Volume } = require('memfs'),
 chai.use(chaiAsPromised);
 
 const folderHash = require('../index'),
-    prep = volume => folderHash.prep(volume, Promise);
+    prep = volume => folderHash.prep(volume);
 
 module.exports = {
     folderHash, prep, Volume, chai, should, inspect

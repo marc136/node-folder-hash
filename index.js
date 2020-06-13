@@ -33,7 +33,7 @@ const log = {
     }
 };
 
-function prep(fs, Promise) {
+function prep(fs) {
     function hashElement(name, dir, options, callback) {
         callback = arguments[arguments.length - 1];
 
@@ -60,7 +60,7 @@ function prep(fs, Promise) {
     }
 
     function hashElementPromise(basename, dirname, options, isRootElement = false) {
-        return stat(path.join(dirname, basename)).then(stats => {
+        return fs.promises.stat(path.join(dirname, basename)).then(stats => {
             if (stats.isDirectory()) {
                 return hashFolderPromise(basename, dirname, options, isRootElement);
             } else if (stats.isFile()) {
@@ -71,18 +71,6 @@ function prep(fs, Promise) {
                     hash: 'unknown element type'
                 };
             }
-        });
-    }
-
-    function stat(filepath) {
-        return new Promise((resolve, reject) => {
-            fs.stat(filepath, (err, stats) => {
-                if (err) {
-                    return reject(err);
-                } else {
-                    return resolve(stats);
-                }
-            });
         });
     }
 
@@ -97,27 +85,14 @@ function prep(fs, Promise) {
             return undefined;
         }
 
-        return readdir(folderPath).then(files => {
-            const children = files.map(child => {
+        return fs.promises.readdir(folderPath).then(files => {
+            const children = files.sort().map(child => {
                 return hashElementPromise(child, folderPath, options);
             });
 
             return Promise.all(children).then(children => {
                 const hash = new HashedFolder(name, children.filter(notUndefined), options, isRootElement);
                 return hash;
-            });
-        });
-    }
-
-    function readdir(folderPath) {
-        return new Promise((resolve, reject) => {
-            fs.readdir(folderPath, (err, files) => {
-                if (err) {
-                    console.error(err);
-                    return reject(err);
-                } else {
-                    return resolve(files.sort());
-                }
             });
         });
     }
@@ -301,8 +276,8 @@ function reduceGlobPatterns(globs) {
 
 module.exports = {
     defaults: defaultOptions,
-    hashElement: prep(require("graceful-fs"), Promise),
+    hashElement: prep(require('graceful-fs')),
     // exposed for testing
-    prep: prep,
-    parseParameters: parseParameters
+    prep,
+    parseParameters
 };
