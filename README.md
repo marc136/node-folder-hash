@@ -146,7 +146,8 @@ const options = {
         matchBasename: true,
         matchPath: false,
         ignoreRootName: false
-    }
+    },
+    ignoreMissingSymLinks: false
 }
 ```
 
@@ -210,6 +211,19 @@ const options = {
             <td colspan="2">
                 <a href="#rules-object-properties">Rules object (see below)</a>
             </td>
+        </tr>
+        <tr>
+            <td>ignoreMissingSymLinks</td>
+            <td>
+                <span>boolean</span>
+            </td>
+            <td>
+                &lt;optional&gt;<br>
+            </td>
+            <td>
+                false
+            </td>
+            <td>If a symlink target does not exist, it will fail. If this option is set to true, it will instead create a hash over the symlink name instead.</td>
         </tr>
     </tbody>
 </table>
