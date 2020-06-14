@@ -1,4 +1,5 @@
-const { Volume } = require('memfs'),
+const clone = require('clone'),
+    { Volume } = require('memfs'),
     assert = require('assert'),
     chai = require('chai'),
     chaiAsPromised = require('chai-as-promised'),
@@ -10,6 +11,8 @@ chai.use(chaiAsPromised);
 const folderHash = require('../index'),
     prep = volume => folderHash.prep(volume);
 
+const defaultOptions = () => clone(folderHash.defaults);
+
 module.exports = {
-    folderHash, prep, Volume, chai, should, inspect
+    folderHash, prep, Volume, chai, should, inspect, defaultOptions
 }
