@@ -147,7 +147,12 @@ const options = {
         matchPath: false,
         ignoreRootName: false
     },
-    ignoreMissingSymLinks: false
+    symbolicLinks: {
+        follow: 'resolve', // 'resolve', 'ignore-target-content', 'skip'
+        ignoreBasename: false,
+        hashTargetPath: false,
+        ignoreMissingTarget: false // only has an effect if follow == 'resolve'
+    }
 }
 ```
 
@@ -213,17 +218,16 @@ const options = {
             </td>
         </tr>
         <tr>
-            <td>ignoreMissingSymLinks</td>
+            <td>symLinks</td>
             <td>
-                <span>boolean</span>
+                <span>Object</span>
             </td>
             <td>
                 &lt;optional&gt;<br>
             </td>
-            <td>
-                false
+            <td colspan="2">
+                <a href="#symlink-options">Symlink options (see below)</a>
             </td>
-            <td>If a symlink target does not exist, it will fail. If this option is set to true, it will instead create a hash over the symlink name instead.</td>
         </tr>
     </tbody>
 </table>
@@ -317,6 +321,67 @@ const options = {
                 false
             </td>
             <td>Set to true to calculate the hash without the basename of the root (first) element</td>
+        </tr>
+    </tbody>
+</table>
+
+### Symlink options
+Configure, how symbolic links should be hashed.  
+To understand how the options can be combined to create a specific behavior, look into [test/symbolic-links.js](https://github.com/marc136/node-folder-hash/blob/master/test/symbolic-links.js).
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Default</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>follow</td>
+            <td>
+                <span>'resolve', 'ignore-target-content', 'skip'</span>
+            </td>
+            <td>
+                'resolve'
+            </td>
+            <td>If skip is chosen, symbolic links are not handled at all. A folder with three symbolic links inside will have no children.
+            <br/>If ignore-target-content, then only the the link basename and link target path are assessed.
+            </td>
+        </tr>
+        <tr>
+            <td>ignoreBasename</td>
+            <td>
+                <span>bool</span>
+            </td>
+            <td>
+                false
+            </td>
+            <td>Set to true to calculate the hash without the basename element</td>
+        </tr>
+        <tr>
+            <td>hashTargetPath</td>
+            <td>
+                <span>bool</span>
+            </td>
+            <td>
+                false
+            </td>
+            <td>Set to true to add the resolved link target to the hash (uses <a href="https://devdocs.io/node/fs#fs_fs_readlink_path_options_callback">fs.readlink</a>)</td>
+        </tr>
+        <tr>
+            <td>ignoreMissingTarget</td>
+            <td>
+                <span>bool</span>
+            </td>
+            <td>
+                false
+            </td>
+            <td><i>Only has an effect for follow: "resolve".</i>
+            <br />If false, a missing link target will result in a fatal error.
+            <br />If true, it will instead only assess the basename and the target path.</td>
         </tr>
     </tbody>
 </table>
