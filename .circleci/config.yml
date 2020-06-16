@@ -1,18 +1,22 @@
-# Javascript Node CircleCI 2.0 configuration file
-#
-# Check https://circleci.com/docs/2.0/language-javascript/ for more details
-#
-version: 2
-jobs:
-  build:
-    docker:
-      # specify the version you desire here
-      - image: circleci/node:10.16.0
+version: 2.1
 
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/mongo:3.4.4
+workflows:
+  run_tests_with_coverage:
+    jobs:
+      - cover:
+          version: "10"
+      - cover:
+          version: "lts"
+      - cover:
+          version: "current"
+
+jobs:
+  cover:
+    parameters:
+      version:
+        type: string
+    docker:
+      - image: circleci/node:<< parameters.version >>
 
     working_directory: ~/repo
 
@@ -35,5 +39,3 @@ jobs:
 
       # run tests!
       - run: npm run cover
-
-
