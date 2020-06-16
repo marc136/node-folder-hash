@@ -23,7 +23,7 @@ orbs:
   win: circleci/windows@2.3.0
 
 jobs:
-  test:
+  cover:
     parameters:
       os:
         type: executor
