@@ -70,7 +70,6 @@ function prep(fs) {
     }
 
     /**
-     * Directory
      * @param {fs.Stats} stats folder element, can also be of type fs.Dirent
      * @param {string} dirname
      * @param {Options} options
