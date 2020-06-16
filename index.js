@@ -136,7 +136,7 @@ function prep(fs) {
                     delete options.ignoreBasenameOnce;
                     log.match(`omitted name of ${filePath} from hash`)
                 } else {
-                    hash.write(name);
+                    hash.update(name);
                 }
 
                 const f = fs.createReadStream(filePath);
@@ -178,11 +178,11 @@ function prep(fs) {
         if (!options.symbolicLinks.ignoreBasename && 
             !(isRootElement && options.files.ignoreRootName)) {
             log.symlink('hash basename');
-            hash.write(name);
+            hash.update(name);
         }
         if (options.symbolicLinks.hashTargetPath) {
             log.symlink('hash targetpath');
-            hash.write(target);
+            hash.update(target);
         }
         return Promise.resolve(new HashedFile(name, hash, options.encoding));
     }
@@ -200,9 +200,9 @@ function prep(fs) {
 
             if (options.symbolicLinks.hashTargetPath) {
                 const hash = crypto.createHash(options.algo);
-                hash.write(temp.hash);
+                hash.update(temp.hash);
                 log.symlink('hash targetpath');
-                hash.write(target);
+                hash.update(target);
                 temp.hash = hash.digest(options.encoding);
             }
             return temp;
@@ -213,10 +213,10 @@ function prep(fs) {
                     const hash = crypto.createHash(options.algo);
                     if (!options.symbolicLinks.ignoreBasename &&
                         !(isRootElement && options.files.ignoreRootName)) {
-                        hash.write(name);
+                        hash.update(name);
                     }
                     if (options.symbolicLinks.hashTargetPath) {
-                        hash.write(target);
+                        hash.update(target);
                     }
                     return new HashedFile(name, hash, options.encoding);
                 } else {
@@ -267,11 +267,11 @@ function prep(fs) {
             delete options.ignoreBasenameOnce;
             log.match(`omitted name of folder ${name} from hash`)
         } else {
-            hash.write(name);
+            hash.update(name);
         }
         children.forEach(child => {
             if (child.hash) {
-                hash.write(child.hash);
+                hash.update(child.hash);
             }
         });
 
