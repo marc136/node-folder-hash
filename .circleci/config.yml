@@ -1,41 +1,48 @@
 version: 2.1
-
 workflows:
-  run_tests_with_coverage:
+  all-tests:
     jobs:
       - cover:
-          version: "10"
-      - cover:
-          version: "lts"
-      - cover:
-          version: "current"
+          matrix:
+            parameters:
+              os: [linux, windows, macos]
+              node-version: ["10.10.0", "lts", "current"]
+
+executors:
+  linux:
+    docker:
+      - image: cimg/base:2020.01
+  macos:
+    macos:
+      xcode: 11.4
+  windows:
+    win/default
+
+orbs:
+  node: circleci/node@2.0.0
+  win: circleci/windows@2.3.0
 
 jobs:
-  cover:
+  test:
     parameters:
-      version:
+      os:
+        type: executor
+      node-version:
         type: string
-    docker:
-      - image: circleci/node:<< parameters.version >>
-
-    working_directory: ~/repo
-
+    executor: << parameters.os >>
     steps:
       - checkout
-
       # Download and cache dependencies
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "package.json" }}
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
-
-      - run: npm install
-
+      - node/install:
+          node-version: << parameters.node-version >>
       - save_cache:
           paths:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
-
       # run tests!
       - run: npm run cover
