@@ -61,6 +61,7 @@ function prep(fs) {
                 }
             })
             .catch(reason => {
+                log.err('Fatal error:', reason);
                 if (isFunction(callback)) {
                     return callback(reason);
                 } else {
