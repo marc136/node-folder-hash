@@ -233,7 +233,7 @@ function prep(fs) {
     function ignore(name, path, rules) {
         if (rules.exclude) {
             if (rules.matchBasename && rules.exclude(name)) {
-                log.match(`exclude basename '${path}'`);
+                log.match(`exclude basename '${name}'`);
                 return true;
             } else if (rules.matchPath && rules.exclude(path)) {
                 log.match(`exclude path '${path}'`);
@@ -241,12 +241,13 @@ function prep(fs) {
             }
         } else if (rules.include) {
             if (rules.matchBasename && rules.include(name)) {
-                log.match(`include basename '${path}'`);
+                log.match(`include basename '${name}'`);
                 return false;
             } else if (rules.matchPath && rules.include(path)) {
                 log.match(`include path '${path}'`);
                 return false;
             } else {
+                log.match(`include rule failed for path '${path}'`);
                 return true;
             }
         }
