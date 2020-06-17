@@ -26,7 +26,9 @@ const defaultOptions = {
         follow: 'resolve', // 'resolve', 'ignore-target-content', 'skip'
         ignoreBasename: false,
         hashTargetPath: false,
-        ignoreMissingTarget: false // only has an effect if follow == 'resolve'
+        // the following only have an effect if follow == 'resolve'
+        ignoreMissingTarget: false,
+        ignoreAllErrors: false
     }
 };
 
@@ -208,24 +210,21 @@ function prep(fs) {
             }
             return temp;
         } catch (err) {
-            if (err.code === 'ENOENT') {
-                if (options.symbolicLinks.ignoreMissingTarget) {
-                    log.symlink('Ignoring missing symbolic link target:', name);
-                    const hash = crypto.createHash(options.algo);
-                    if (!options.symbolicLinks.ignoreBasename &&
-                        !(isRootElement && options.files.ignoreRootName)) {
-                        hash.update(name);
-                    }
-                    if (options.symbolicLinks.hashTargetPath) {
-                        hash.update(target);
-                    }
-                    return new HashedFile(name, hash, options.encoding);
-                } else {
-                    log.symlink('Error: Missing symbolic link target:', name);
-                    throw err;
+            if ((err.code === 'ENOENT' && options.symbolicLinks.ignoreMissingTarget) ||
+                options.symbolicLinks.ignoreAllErrors)
+            {
+                log.symlink(`Ignoring error "${err.code}" when hashing symbolic link ${name}`, err);
+                const hash = crypto.createHash(options.algo);
+                if (!options.symbolicLinks.ignoreBasename &&
+                    !(isRootElement && options.files.ignoreRootName)) {
+                    hash.update(name);
                 }
+                if (options.symbolicLinks.hashTargetPath) {
+                    hash.update(target);
+                }
+                return new HashedFile(name, hash, options.encoding);
             } else {
-                log.symlink(`Error: When hashing symbolic link ${name}`, err);
+                log.symlink(`Error "${err.code}": When hashing symbolic link ${name}`, err);
                 throw err;
             }
         }

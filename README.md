@@ -151,7 +151,9 @@ const options = {
         follow: 'resolve', // 'resolve', 'ignore-target-content', 'skip'
         ignoreBasename: false,
         hashTargetPath: false,
-        ignoreMissingTarget: false // only has an effect if follow == 'resolve'
+        // the following only have an effect if follow == 'resolve'
+        ignoreMissingTarget: false,
+        ignoreAllErrors: false
     }
 }
 ```
@@ -382,6 +384,17 @@ To understand how the options can be combined to create a specific behavior, loo
             <td><i>Only has an effect for follow: "resolve".</i>
             <br />If false, a missing link target will result in a fatal error.
             <br />If true, it will instead only assess the basename and the target path.</td>
+        </tr>
+        <tr>
+            <td>ignoreAllErrors</td>
+            <td>
+                <span>bool</span>
+            </td>
+            <td>
+                false
+            </td>
+            <td><i>Only has an effect for follow: "resolve".</i>
+            <br />Will ignore all errors while trying to hash symbolic links. E.g. missing target or access permissions.</td>
         </tr>
     </tbody>
 </table>

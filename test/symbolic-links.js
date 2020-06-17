@@ -238,6 +238,18 @@ function linkType(type) {
                 result.hash.should.equal(expected);
             });
         });
+
+        it('should hash the name if all symlink errors are ignored', function () {
+            const fs = Volume.fromJSON({ 'file': 'content' });
+            fs.symlinkSync('non-existing-file', 'soft-link', type);
+            const hash = prep(fs);
+            const options = { symbolicLinks : { ignoreAllErrors: true }};
+
+            return hash('soft-link', options).then(result => {
+                const expected = toHash(['soft-link']);
+                result.hash.should.equal(expected);
+            });
+        });
     });
 }
 
