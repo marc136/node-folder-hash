@@ -195,26 +195,37 @@ describe('Generating a hash over a folder, it', function () {
         });
     });
 
-    it('ignores a folder it is both included and excluded', function () {
+    it('ignores a folder it is both included and excluded', async function () {
         const hashElement = prep(Volume.fromJSON({
             'base/file1': 'content',
             'base/folder/file2': '2',
             'base/folder2/file3': '3'
         }));
 
-        return hashElement('base', {
+        async function verify(options) {
+            const result = await hashElement('base', options);
+            should.exist(result.hash);
+            should.exist(result.children);
+            result.children.length.should.equal(2);
+            result.children[0].name.should.equal('file1');
+            result.children[1].name.should.equal('folder2');
+        }
+
+        await verify({
             folders: {
-                exclude: ['**/folder', '**folder'], include: ['*'],
+                exclude: ['**/folder'],
+                include: ['**/*'],
                 matchBasename: false, matchPath: true
             }
-        })
-            .then(result => {
-                should.exist(result.hash);
-                should.exist(result.children);
-                result.children.length.should.equal(2);
-                result.children[0].name.should.equal('file1');
-                result.children[1].name.should.equal('folder2');
-            });
+        });
+
+        await verify({
+            folders: {
+                exclude: ['folder'],
+                include: ['*'],
+                matchBasename: true, matchPath: false
+            }
+        });
     });
 
     it('only includes the wanted folders', function () {
@@ -280,15 +291,15 @@ describe('Generating a hash over a folder, it', function () {
             'def/file1.js': '//just a comment',
             'def/def/.ignored': 'ignored'
         }));
-        const options = { 
+        const options = {
             folders: { ignoreRootName: true },
-            files: { exclude: ['.*'] } 
+            files: { exclude: ['.*'] }
         };
 
         return Promise.all([
             hashElement('abc', options),
             hashElement('def', options)
-        ]).then(function (hashes) { 
+        ]).then(function (hashes) {
             return hashes[0].hash.should.equal(hashes[1].hash);
         });
     });
@@ -301,15 +312,15 @@ describe('Generating a hash over a folder, it', function () {
             'def/file1.js': '//just a comment',
             'def/def/.ignored': 'ignored'
         }));
-        const options = { 
+        const options = {
             folders: { ignoreBasename: true },
-            files: { exclude: ['.*'] } 
+            files: { exclude: ['.*'] }
         };
 
         return Promise.all([
             hashElement('abc', options),
             hashElement('def', options)
-        ]).then(function (hashes) { 
+        ]).then(function (hashes) {
             return hashes[1].hash.should.equal(hashes[0].hash);
         });
     });

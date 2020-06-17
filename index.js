@@ -165,10 +165,10 @@ function prep(fs) {
 
             case 'ignore-target-content':
                 return symLinkIgnoreTargetContent(name, target, options, isRootElement);
-            
+
             case 'resolve':
                 return symLinkResolve(name, dir, target, options, isRootElement);
-            
+
             default:
                 throw `Invalid option: symbolicLinks.follow = "${options.symbolicLinks.follow}"`;
         }
@@ -178,7 +178,7 @@ function prep(fs) {
         delete options.skipMatching // only used for the root level
         log.symlink('ignoring symbolic link target content');
         const hash = crypto.createHash(options.algo);
-        if (!options.symbolicLinks.ignoreBasename && 
+        if (!options.symbolicLinks.ignoreBasename &&
             !(isRootElement && options.files.ignoreRootName)) {
             log.symlink('hash basename');
             hash.update(name);
@@ -233,20 +233,22 @@ function prep(fs) {
     function ignore(name, path, rules) {
         if (rules.exclude) {
             if (rules.matchBasename && rules.exclude(name)) {
-                log.match(`exclude basename '${path}'`);
+                log.match(`exclude basename '${name}'`);
                 return true;
             } else if (rules.matchPath && rules.exclude(path)) {
                 log.match(`exclude path '${path}'`);
                 return true;
             }
-        } else if (rules.include) {
+        }
+        if (rules.include) {
             if (rules.matchBasename && rules.include(name)) {
-                log.match(`include basename '${path}'`);
+                log.match(`include basename '${name}'`);
                 return false;
             } else if (rules.matchPath && rules.include(path)) {
                 log.match(`include path '${path}'`);
                 return false;
             } else {
+                log.match(`include rule failed for path '${path}'`);
                 return true;
             }
         }
@@ -254,57 +256,6 @@ function prep(fs) {
         log.match(`Will not ignore unmatched '${path}'`);
         return false;
     }
-
-    const HashedFolder = function HashedFolder(name, children, options, isRootElement = false) {
-        this.name = name;
-        this.children = children;
-
-        const hash = crypto.createHash(options.algo);
-        if (options.folders.ignoreBasename ||
-            options.ignoreBasenameOnce ||
-            (isRootElement && options.folders.ignoreRootName))
-        {
-            delete options.ignoreBasenameOnce;
-            log.match(`omitted name of folder ${name} from hash`)
-        } else {
-            hash.update(name);
-        }
-        children.forEach(child => {
-            if (child.hash) {
-                hash.update(child.hash);
-            }
-        });
-
-        this.hash = hash.digest(options.encoding);
-    };
-
-    HashedFolder.prototype.toString = function (padding = '') {
-        const first = `${padding}{ name: '${this.name}', hash: '${this.hash},'\n`;
-        padding += '  ';
-
-        return `${first}${padding}children: ${this.childrenToString(padding)}}`;
-    };
-
-    HashedFolder.prototype.childrenToString = function (padding = '') {
-        if (this.children.length === 0) {
-            return '[]';
-        } else {
-            const nextPadding = padding + '  ';
-            const children = this.children
-                .map(child => child.toString(nextPadding))
-                .join('\n');
-            return `[\n${children}\n${padding}]`;
-        }
-    };
-
-    const HashedFile = function HashedFile(name, hash, encoding) {
-        this.name = name;
-        this.hash = hash.digest(encoding);
-    };
-
-    HashedFile.prototype.toString = function (padding = '') {
-        return padding + '{ name: \'' + this.name + '\', hash: \'' + this.hash + '\' }';
-    };
 
     return hashElement;
 }
@@ -343,6 +294,57 @@ function parseParameters(args) {
 
     return Promise.resolve(log.params({ basename, dir, options }));
 }
+
+const HashedFolder = function HashedFolder(name, children, options, isRootElement = false) {
+    this.name = name;
+    this.children = children;
+
+    const hash = crypto.createHash(options.algo);
+    if (options.folders.ignoreBasename ||
+        options.ignoreBasenameOnce ||
+        (isRootElement && options.folders.ignoreRootName))
+    {
+        delete options.ignoreBasenameOnce;
+        log.match(`omitted name of folder ${name} from hash`)
+    } else {
+        hash.update(name);
+    }
+    children.forEach(child => {
+        if (child.hash) {
+            hash.update(child.hash);
+        }
+    });
+
+    this.hash = hash.digest(options.encoding);
+};
+
+HashedFolder.prototype.toString = function (padding = '') {
+    const first = `${padding}{ name: '${this.name}', hash: '${this.hash},'\n`;
+    padding += '  ';
+
+    return `${first}${padding}children: ${this.childrenToString(padding)}}`;
+};
+
+HashedFolder.prototype.childrenToString = function (padding = '') {
+    if (this.children.length === 0) {
+        return '[]';
+    } else {
+        const nextPadding = padding + '  ';
+        const children = this.children
+            .map(child => child.toString(nextPadding))
+            .join('\n');
+        return `[\n${children}\n${padding}]`;
+    }
+};
+
+const HashedFile = function HashedFile(name, hash, encoding) {
+    this.name = name;
+    this.hash = hash.digest(encoding);
+};
+
+HashedFile.prototype.toString = function (padding = '') {
+    return padding + '{ name: \'' + this.name + '\', hash: \'' + this.hash + '\' }';
+};
 
 function isFunction(any) {
     return typeof any === 'function';
