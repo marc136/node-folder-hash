@@ -21,6 +21,14 @@ const defaultOptions = {
         matchPath: false,
         ignoreBasename: false,
         ignoreRootName: false
+    },
+    symbolicLinks: {
+        follow: 'resolve', // 'resolve', 'ignore-target-content', 'skip'
+        ignoreBasename: false,
+        hashTargetPath: false,
+        // the following only have an effect if follow == 'resolve'
+        ignoreMissingTarget: false,
+        ignoreAllErrors: false
     }
 };
 
@@ -30,7 +38,9 @@ const log = {
     params: (params) => {
         debug('fhash:parameters')(params);
         return params;
-    }
+    },
+    err: debug('fhash:err'),
+    symlink: debug('fhash:symlink')
 };
 
 function prep(fs) {
@@ -41,7 +51,9 @@ function prep(fs) {
             .then(({ basename, dir, options }) => {
                 // this is only used for the root level
                 options.skipMatching = true;
-                return hashElementPromise(basename, dir, options, true);
+                return fs.promises.lstat(path.join(dir, basename))
+                    .then(stats => { stats.name = basename; return stats; })
+                    .then(stats => hashElementPromise(stats, dir, options, true));
             })
             .then(result => {
                 if (isFunction(callback)) {
@@ -51,6 +63,7 @@ function prep(fs) {
                 }
             })
             .catch(reason => {
+                log.err('Fatal error:', reason);
                 if (isFunction(callback)) {
                     return callback(reason);
                 } else {
@@ -59,23 +72,30 @@ function prep(fs) {
             });
     }
 
-    function hashElementPromise(basename, dirname, options, isRootElement = false) {
-        return fs.promises.stat(path.join(dirname, basename)).then(stats => {
-            if (stats.isDirectory()) {
-                return hashFolderPromise(basename, dirname, options, isRootElement);
-            } else if (stats.isFile()) {
-                return hashFilePromise(basename, dirname, options, isRootElement);
-            } else {
-                return {
-                    name: basename,
-                    hash: 'unknown element type'
-                };
-            }
-        });
+    /**
+     * @param {fs.Stats} stats folder element, can also be of type fs.Dirent
+     * @param {string} dirname
+     * @param {Options} options
+     * @param {boolean} isRootElement
+     */
+    function hashElementPromise(stats, dirname, options, isRootElement = false) {
+        const name = stats.name;
+        if (stats.isDirectory()) {
+            return hashFolderPromise(name, dirname, options, isRootElement);
+        } else if (stats.isFile()) {
+            return hashFilePromise(name, dirname, options, isRootElement);
+        } else if (stats.isSymbolicLink()) {
+            return hashSymLinkPromise(name, dirname, options, isRootElement);
+        } else {
+            log.err('hashElementPromise cannot handle ', stats);
+            return { name, hash: 'Error: unknown element type' };
+        }
     }
 
     function hashFolderPromise(name, dir, options, isRootElement = false) {
         const folderPath = path.join(dir, name);
+        let ignoreBasenameOnce = options.ignoreBasenameOnce;
+        delete options.ignoreBasenameOnce;
 
         if (options.skipMatching) {
             // this is currently only used for the root folder
@@ -85,12 +105,13 @@ function prep(fs) {
             return undefined;
         }
 
-        return fs.promises.readdir(folderPath).then(files => {
+        return fs.promises.readdir(folderPath, { withFileTypes: true }).then(files => {
             const children = files.sort().map(child => {
                 return hashElementPromise(child, folderPath, options);
             });
 
             return Promise.all(children).then(children => {
+                if (ignoreBasenameOnce) options.ignoreBasenameOnce = true;
                 const hash = new HashedFolder(name, children.filter(notUndefined), options, isRootElement);
                 return hash;
             });
@@ -112,11 +133,13 @@ function prep(fs) {
             try {
                 const hash = crypto.createHash(options.algo);
                 if (options.files.ignoreBasename ||
+                    options.ignoreBasenameOnce ||
                     (isRootElement && options.files.ignoreRootName))
                 {
+                    delete options.ignoreBasenameOnce;
                     log.match(`omitted name of ${filePath} from hash`)
                 } else {
-                    hash.write(name);
+                    hash.update(name);
                 }
 
                 const f = fs.createReadStream(filePath);
@@ -130,6 +153,81 @@ function prep(fs) {
                 return reject(ex);
             }
         });
+    }
+
+    async function hashSymLinkPromise(name, dir, options, isRootElement = false) {
+        const target = await fs.promises.readlink(path.join(dir, name));
+        log.symlink(`handling symbolic link ${name} -> ${target}`);
+        switch (options.symbolicLinks.follow) {
+            case 'skip':
+                log.symlink('skipping symbolic link');
+                return Promise.resolve(undefined);
+
+            case 'ignore-target-content':
+                return symLinkIgnoreTargetContent(name, target, options, isRootElement);
+            
+            case 'resolve':
+                return symLinkResolve(name, dir, target, options, isRootElement);
+            
+            default:
+                throw `Invalid option: symbolicLinks.follow = "${options.symbolicLinks.follow}"`;
+        }
+    }
+
+    function symLinkIgnoreTargetContent(name, target, options, isRootElement) {
+        delete options.skipMatching // only used for the root level
+        log.symlink('ignoring symbolic link target content');
+        const hash = crypto.createHash(options.algo);
+        if (!options.symbolicLinks.ignoreBasename && 
+            !(isRootElement && options.files.ignoreRootName)) {
+            log.symlink('hash basename');
+            hash.update(name);
+        }
+        if (options.symbolicLinks.hashTargetPath) {
+            log.symlink('hash targetpath');
+            hash.update(target);
+        }
+        return Promise.resolve(new HashedFile(name, hash, options.encoding));
+    }
+
+    async function symLinkResolve(name, dir, target, options, isRootElement) {
+        delete options.skipMatching // only used for the root level
+        if (options.symbolicLinks.ignoreBasename) {
+            options.ignoreBasenameOnce = true;
+        }
+
+        try {
+            const stats = await fs.promises.stat(path.join(dir, name));
+            stats.name = name;
+            const temp = await hashElementPromise(stats, dir, options, isRootElement);
+
+            if (options.symbolicLinks.hashTargetPath) {
+                const hash = crypto.createHash(options.algo);
+                hash.update(temp.hash);
+                log.symlink('hash targetpath');
+                hash.update(target);
+                temp.hash = hash.digest(options.encoding);
+            }
+            return temp;
+        } catch (err) {
+            if ((err.code === 'ENOENT' && options.symbolicLinks.ignoreMissingTarget) ||
+                options.symbolicLinks.ignoreAllErrors)
+            {
+                log.symlink(`Ignoring error "${err.code}" when hashing symbolic link ${name}`, err);
+                const hash = crypto.createHash(options.algo);
+                if (!options.symbolicLinks.ignoreBasename &&
+                    !(isRootElement && options.files.ignoreRootName)) {
+                    hash.update(name);
+                }
+                if (options.symbolicLinks.hashTargetPath) {
+                    hash.update(target);
+                }
+                return new HashedFile(name, hash, options.encoding);
+            } else {
+                log.symlink(`Error "${err.code}": When hashing symbolic link ${name}`, err);
+                throw err;
+            }
+        }
     }
 
     function ignore(name, path, rules) {
@@ -162,16 +260,18 @@ function prep(fs) {
         this.children = children;
 
         const hash = crypto.createHash(options.algo);
-        if (options.folders.ignoreBasename || 
+        if (options.folders.ignoreBasename ||
+            options.ignoreBasenameOnce ||
             (isRootElement && options.folders.ignoreRootName))
         {
+            delete options.ignoreBasenameOnce;
             log.match(`omitted name of folder ${name} from hash`)
         } else {
-            hash.write(name);
+            hash.update(name);
         }
         children.forEach(child => {
             if (child.hash) {
-                hash.write(child.hash);
+                hash.update(child.hash);
             }
         });
 
@@ -231,7 +331,8 @@ function parseParameters(args) {
         encoding: options_.encoding || defaultOptions.encoding,
         files: Object.assign({}, defaultOptions.files, options_.files),
         folders: Object.assign({}, defaultOptions.folders, options_.folders),
-        match: Object.assign({}, defaultOptions.match, options_.match)
+        match: Object.assign({}, defaultOptions.match, options_.match),
+        symbolicLinks: Object.assign({}, defaultOptions.symbolicLinks, options_.symbolicLinks)
     };
 
     // transform match globs to Regex
