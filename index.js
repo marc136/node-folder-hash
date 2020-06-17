@@ -239,7 +239,8 @@ function prep(fs) {
                 log.match(`exclude path '${path}'`);
                 return true;
             }
-        } else if (rules.include) {
+        }
+        if (rules.include) {
             if (rules.matchBasename && rules.include(name)) {
                 log.match(`include basename '${name}'`);
                 return false;
