@@ -23,12 +23,11 @@ const defaultOptions = {
         ignoreRootName: false
     },
     symbolicLinks: {
-        follow: 'resolve', // 'resolve', 'ignore-target-content', 'skip'
+        include: true,
         ignoreBasename: false,
-        hashTargetPath: false,
-        // the following only have an effect if follow == 'resolve'
-        ignoreMissingTarget: false,
-        ignoreAllErrors: false
+        ignoreTargetPath: true,
+        ignoreTargetContent: false,
+        ignoreTargetContentAfterError: false
     }
 };
 
@@ -158,19 +157,15 @@ function prep(fs) {
     async function hashSymLinkPromise(name, dir, options, isRootElement = false) {
         const target = await fs.promises.readlink(path.join(dir, name));
         log.symlink(`handling symbolic link ${name} -> ${target}`);
-        switch (options.symbolicLinks.follow) {
-            case 'skip':
-                log.symlink('skipping symbolic link');
-                return Promise.resolve(undefined);
-
-            case 'ignore-target-content':
+        if (options.symbolicLinks.include) {
+            if (options.symbolicLinks.ignoreTargetContent) {
                 return symLinkIgnoreTargetContent(name, target, options, isRootElement);
-
-            case 'resolve':
+            } else {
                 return symLinkResolve(name, dir, target, options, isRootElement);
-
-            default:
-                throw `Invalid option: symbolicLinks.follow = "${options.symbolicLinks.follow}"`;
+            }
+        } else {
+            log.symlink('skipping symbolic link');
+            return Promise.resolve(undefined);
         }
     }
 
@@ -183,7 +178,7 @@ function prep(fs) {
             log.symlink('hash basename');
             hash.update(name);
         }
-        if (options.symbolicLinks.hashTargetPath) {
+        if (!options.symbolicLinks.ignoreTargetPath) {
             log.symlink('hash targetpath');
             hash.update(target);
         }
@@ -201,7 +196,7 @@ function prep(fs) {
             stats.name = name;
             const temp = await hashElementPromise(stats, dir, options, isRootElement);
 
-            if (options.symbolicLinks.hashTargetPath) {
+            if (!options.symbolicLinks.ignoreTargetPath) {
                 const hash = crypto.createHash(options.algo);
                 hash.update(temp.hash);
                 log.symlink('hash targetpath');
@@ -210,16 +205,14 @@ function prep(fs) {
             }
             return temp;
         } catch (err) {
-            if ((err.code === 'ENOENT' && options.symbolicLinks.ignoreMissingTarget) ||
-                options.symbolicLinks.ignoreAllErrors)
-            {
+            if (options.symbolicLinks.ignoreTargetContentAfterError) {
                 log.symlink(`Ignoring error "${err.code}" when hashing symbolic link ${name}`, err);
                 const hash = crypto.createHash(options.algo);
                 if (!options.symbolicLinks.ignoreBasename &&
                     !(isRootElement && options.files.ignoreRootName)) {
                     hash.update(name);
                 }
-                if (options.symbolicLinks.hashTargetPath) {
+                if (!options.symbolicLinks.ignoreTargetPath) {
                     hash.update(target);
                 }
                 return new HashedFile(name, hash, options.encoding);

@@ -148,12 +148,13 @@ const options = {
         ignoreRootName: false
     },
     symbolicLinks: {
-        follow: 'resolve', // 'resolve', 'ignore-target-content', 'skip'
+        symbolicLinks: {
+        include: true,
         ignoreBasename: false,
-        hashTargetPath: false,
-        // the following only have an effect if follow == 'resolve'
-        ignoreMissingTarget: false,
-        ignoreAllErrors: false
+        ignoreTargetPath: true,
+        ignoreTargetContent: false,
+        ignoreTargetContentAfterError: false,
+      }
     }
 }
 ```
@@ -342,16 +343,14 @@ To understand how the options can be combined to create a specific behavior, loo
     </thead>
     <tbody>
         <tr>
-            <td>follow</td>
+            <td>include</td>
             <td>
-                <span>'resolve', 'ignore-target-content', 'skip'</span>
+                <span>bool</span>
             </td>
             <td>
-                'resolve'
+                true
             </td>
-            <td>If skip is chosen, symbolic links are not handled at all. A folder with three symbolic links inside will have no children.
-            <br/>If ignore-target-content, then only the the link basename and link target path are assessed.
-            </td>
+            <td>If false, symbolic links are not handled at all. A folder with three symbolic links inside will have no children entries.</td>
         </tr>
         <tr>
             <td>ignoreBasename</td>
@@ -364,37 +363,34 @@ To understand how the options can be combined to create a specific behavior, loo
             <td>Set to true to calculate the hash without the basename element</td>
         </tr>
         <tr>
-            <td>hashTargetPath</td>
+            <td>ignoreTargetPath</td>
             <td>
                 <span>bool</span>
             </td>
             <td>
-                false
+                true
             </td>
-            <td>Set to true to add the resolved link target to the hash (uses <a href="https://devdocs.io/node/fs#fs_fs_readlink_path_options_callback">fs.readlink</a>)</td>
+            <td>If false, the resolved link target is added to the hash (uses <a href="https://devdocs.io/node/fs#fs_fs_readlink_path_options_callback">fs.readlink</a>)</td>
         </tr>
         <tr>
-            <td>ignoreMissingTarget</td>
+            <td>ignoreTargetContent</td>
             <td>
                 <span>bool</span>
             </td>
             <td>
                 false
             </td>
-            <td><i>Only has an effect for follow: "resolve".</i>
-            <br />If false, a missing link target will result in a fatal error.
-            <br />If true, it will instead only assess the basename and the target path.</td>
+            <td>If true, will only assess the basename and target path (as configured in the other options)</td>
         </tr>
         <tr>
-            <td>ignoreAllErrors</td>
+            <td>ignoreTargetContentAfterError</td>
             <td>
                 <span>bool</span>
             </td>
             <td>
                 false
             </td>
-            <td><i>Only has an effect for follow: "resolve".</i>
-            <br />Will ignore all errors while trying to hash symbolic links. E.g. missing target or access permissions.</td>
+            <td>If true, will ignore all errors while trying to hash symbolic links and only assess the basename and target path (as configured in other options).<br />E.g. a missing target (<i>ENOENT</i>) or access permissions (<i>EPERM</i>).</td>
         </tr>
     </tbody>
 </table>

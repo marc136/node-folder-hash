@@ -25,7 +25,7 @@ describe('When hashing a symbolic link', async function () {
         fs.symlinkSync('folder/file', 'l2');
         const hash = prep(fs);
 
-        const options = { symbolicLinks : { follow: 'skip' }};
+        const options = { symbolicLinks : { include: false }};
         return Promise.all([
             hash('l1', options).should.eventually.be.undefined,
             hash('l2', options).should.eventually.be.undefined,
@@ -39,7 +39,7 @@ describe('When hashing a symbolic link', async function () {
         fs.symlinkSync('folder/file', 'l2');
         const hash = prep(fs);
 
-        const options = { symbolicLinks: { follow: 'ignore-target-content' }};
+        const options = { symbolicLinks: { ignoreTargetContent: true }};
 
         const expected = {
             l1: toHash(['l1']),
@@ -51,16 +51,6 @@ describe('When hashing a symbolic link', async function () {
         const l2 = await hash('l2', options);
         l2.hash.should.equal(expected.l2);
     });
-
-    it('should throw if an invalid follow option is given', function () {
-        const fs = Volume.fromJSON({ 'a': 'a' });
-        fs.symlinkSync('non-existing', 'l1');
-        const hash = prep(fs);
-
-        const options = { symbolicLinks : { follow: 'not-supported' }};
-        const expected = 'Invalid option: symbolicLinks.follow = "not-supported"';
-        return hash('l1', options).should.eventually.be.rejectedWith(expected);
-    })
 });
 
 describe('Hashing the symlink to a folder and the folder should return the same hash when', function () {
@@ -72,8 +62,8 @@ describe('Hashing the symlink to a folder and the folder should return the same 
 
         const options = {
             symbolicLinks: {
-                follow: 'resolve',
-                hashTargetPath: false,
+                include: true,
+                ignoreTargetPath: true,
             }
         };
 
@@ -90,8 +80,7 @@ describe('Hashing the symlink to a folder and the folder should return the same 
         const options = {
             folders: { ignoreBasename: true },
             symbolicLinks: {
-                follow: 'resolve',
-                hashTargetPath: false,
+                ignoreTargetPath: true,
                 ignoreBasename: true
             }
         };
@@ -105,7 +94,7 @@ describe('Hashing the symlink to a folder and the folder should return the same 
     });
 });
 
-describe('When symbolicLinks.follow equals "ignore-target-content"', function() {
+describe('When symbolicLinks.ignoreTargetContent is true', function() {
     const fs = Volume.fromJSON({'file': 'a'}, 'folder');
     fs.symlinkSync('non-existing', 'l1');
     fs.symlinkSync('folder/file', 'l2');
@@ -114,8 +103,9 @@ describe('When symbolicLinks.follow equals "ignore-target-content"', function() 
 
     it('hashes the name and target path', async function () {
         const options = { symbolicLinks : {
-            follow: 'ignore-target-content',
-            hashTargetPath: true
+            include: true,
+            ignoreTargetContent: true,
+            ignoreTargetPath: false
         }};
         let result = await hash('l2', options);
         const expected = toHash(['l2', path.resolve('folder/file')]);
@@ -124,8 +114,9 @@ describe('When symbolicLinks.follow equals "ignore-target-content"', function() 
 
     it('hashes the target path', async function () {
         const options = { symbolicLinks: {
-            follow: 'ignore-target-content',
-            hashTargetPath: true,
+            include: true,
+            ignoreTargetContent: true,
+            ignoreTargetPath: false,
             ignoreBasename: true
         }};
         let result = await hash('l2', options);
@@ -134,17 +125,18 @@ describe('When symbolicLinks.follow equals "ignore-target-content"', function() 
     });
 
     it('will not fail if the target is missing', async function () {
-        const opt = { symbolicLinks : {
-            follow: 'ignore-target-content',
-            hashTargetPath: true
+        const options = { symbolicLinks: {
+            include: true,
+            ignoreTargetContent: true,
+            ignoreTargetPath: false
         }};
-        let result = (await hash('l1', opt));
+        let result = await hash('l1', options);
         const expected = toHash(['l1', path.resolve('non-existing')]);
         return result.hash.should.equal(expected);
     });
 });
 
-describe('When symbolicLinks.follow equals "resolve"', function () {
+describe('When symbolicLinks.include equals "resolve"', function () {
     const fs = Volume.fromJSON({'file': 'a'}, 'folder');
     fs.symlinkSync('non-existing', 'l1');
     fs.symlinkSync('folder/file', 'l2');
@@ -158,8 +150,8 @@ describe('When symbolicLinks.follow equals "resolve"', function () {
 
     it('can create a hash over basename file content and target path', async function () {
         const options = { symbolicLinks: {
-            follow: 'resolve',
-            hashTargetPath: true,
+            include: true,
+            ignoreTargetPath: false,
             ignoreBasename: false
         }};
 
@@ -173,8 +165,8 @@ describe('When symbolicLinks.follow equals "resolve"', function () {
             // this will ignore all file basenames
             files: { ignoreBasename: true },
             symbolicLinks: {
-                follow: 'resolve',
-                hashTargetPath: true,
+                include: true,
+                ignoreTargetPath: false,
             }
         };
 
@@ -186,8 +178,8 @@ describe('When symbolicLinks.follow equals "resolve"', function () {
             // this will only ignore symbolic link basenames
             files: { ignoreBasename: false },
             symbolicLinks: {
-                follow: 'resolve',
-                hashTargetPath: true,
+                include: true,
+                ignoreTargetPath: false,
                 ignoreBasename: true
             }
         };
@@ -212,11 +204,11 @@ function linkType(type) {
             return hash('.').should.eventually.be.rejectedWith(expected);
         });
 
-        it('should hash only the name if ignoreMissingTarget is true', function () {
+        it('should hash only the name if ignoreTargetContentAfterError is true', function () {
             const fs = Volume.fromJSON({ 'file': 'content' });
             fs.symlinkSync('non-existing-file', 'soft-link', type);
             const hash = prep(fs);
-            const options = { symbolicLinks: { ignoreMissingTarget: true }};
+            const options = { symbolicLinks: { ignoreTargetContentAfterError: true }};
 
             return hash('.', options).then(result => {
                 result.children[1].hash.should.equal('2rAbS3Cr1VJjcXABKQhmBD2SS3s=');
@@ -229,8 +221,8 @@ function linkType(type) {
             fs.symlinkSync('non-existing-file', 'soft-link', type);
             const hash = prep(fs);
             const options = { symbolicLinks : {
-                ignoreMissingTarget: true,
-                hashTargetPath: true
+                ignoreTargetContentAfterError: true,
+                ignoreTargetPath: false
             }};
 
             return hash('soft-link', options).then(result => {
@@ -243,7 +235,7 @@ function linkType(type) {
             const fs = Volume.fromJSON({ 'file': 'content' });
             fs.symlinkSync('non-existing-file', 'soft-link', type);
             const hash = prep(fs);
-            const options = { symbolicLinks : { ignoreAllErrors: true }};
+            const options = { symbolicLinks : { ignoreTargetContentAfterError: true }};
 
             return hash('soft-link', options).then(result => {
                 const expected = toHash(['soft-link']);
