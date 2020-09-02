@@ -2,35 +2,37 @@
 The hashes are propagated upwards, the hash that is returned for a folder is generated over all the hashes of its children.  
 The hashes are generated with the _sha1_ algorithm and returned in _base64_ encoding by default.
 
-Each file returns a name and a hash, and each folder returns additionally an array of children (file or folder elements).  
+Each file returns a name and a hash, and each folder returns additionally an array of children (file or folder elements).
 
-## Usage 
-First, install folder-hash with `npm install --save folder-hash` or `yarn add folder-hash`.  
+## Usage
+
+First, install folder-hash with `npm install --save folder-hash` or `yarn add folder-hash`.
 
 ### Simple example
-To see differences to the last version of this package, I would create hashes over all *.js* and *.json* files. But ignore everything inside folders starting with a dot, and also from the folders *node_modules*, *test_coverage*. The structure of the options object is documented <a href="#options">below.</a>  
-This example is also stored in [./examples/readme-example1.js](/examples/readme-example1.js).  
 
+To see differences to the last version of this package, I would create hashes over all _.js_ and _.json_ files. But ignore everything inside folders starting with a dot, and also from the folders _node_modules_, _test_coverage_. The structure of the options object is documented <a href="#options">below.</a>  
+This example is also stored in [./examples/readme-example1.js](/examples/readme-example1.js).
 
 ```js
 const { hashElement } = require('folder-hash');
 
 const options = {
-    folders: { exclude: ['.*', 'node_modules', 'test_coverage'] },
-    files: { include: ['*.js', '*.json'] }
+  folders: { exclude: ['.*', 'node_modules', 'test_coverage'] },
+  files: { include: ['*.js', '*.json'] },
 };
 
 console.log('Creating a hash over the current folder:');
 hashElement('.', options)
-    .then(hash => {
-        console.log(hash.toString());
-    })
-    .catch(error => {
-        return console.error('hashing failed:', error);
-    });
+  .then(hash => {
+    console.log(hash.toString());
+  })
+  .catch(error => {
+    return console.error('hashing failed:', error);
+  });
 ```
 
 The returned information looks for example like this:
+
 ```
 Creating a hash over the current folder:
 { name: '.', hash: 'YZOrKDx9LCLd8X39PoFTflXGpRU=,'
@@ -51,24 +53,27 @@ Creating a hash over the current folder:
       ]}
   ]}
 ```
+
 And the structure may be traversed to e.g. create incremental backups.
 
 It is also possible to only match the full path and not the basename. The same configuration could look like this:  
-_You should be aware that *nix and Windows behave differently, so please use caution._
+_You should be aware that \*nix and Windows behave differently, so please use caution._
+
 ```js
 const options = {
-    folders: {
-        exclude: ['.*', '**.*', '**node_modules', '**test_coverage'],
-        matchBasename: false, matchPath: true
-    },
-    files: {
-        //include: ['**.js', '**.json' ], // Windows
-        include: ['*.js', '**/*.js', '*.json', '**/*.json'], // *nix
-        matchBasename: false, matchPath: true
-    }
+  folders: {
+    exclude: ['.*', '**.*', '**node_modules', '**test_coverage'],
+    matchBasename: false,
+    matchPath: true,
+  },
+  files: {
+    //include: ['**.js', '**.json' ], // Windows
+    include: ['*.js', '**/*.js', '*.json', '**/*.json'], // *nix
+    matchBasename: false,
+    matchPath: true,
+  },
 };
 ```
-
 
 ### Parameters for the hashElement function
 
@@ -127,7 +132,9 @@ const options = {
 </table>
 
 ## Options
+
 ### Default values
+
 ```js
 {
     algo: 'sha1',       // see crypto.getHashes() for options
@@ -236,6 +243,7 @@ const options = {
 </table>
 
 #### Rules object properties
+
 <table>
     <thead>
         <tr>
@@ -329,6 +337,7 @@ const options = {
 </table>
 
 ### Symlink options
+
 Configure, how symbolic links should be hashed.  
 To understand how the options can be combined to create a specific behavior, look into [test/symbolic-links.js](https://github.com/marc136/node-folder-hash/blob/master/test/symbolic-links.js).
 
@@ -396,11 +405,15 @@ To understand how the options can be combined to create a specific behavior, loo
 </table>
 
 ## Command line usage
+
 After installing it globally via
+
 ```
 $ npm install -g folder-hash
 ```
+
 You can use it like this:
+
 ```
 # local folder
 $ folder-hash -c config.json .
@@ -413,6 +426,7 @@ $ folder-hash /user/bin
 It also allows to pass an optional JSON configuration file with the `-c` or `--config` flag, which should contain the same configuration as when using the JavaScript API.
 
 You can also use a local version of folder-hash like this:
+
 ```
 $ npx folder-hash --help
 Use folder-hash on cli like this:
@@ -420,8 +434,11 @@ Use folder-hash on cli like this:
 ```
 
 ## Examples
+
 ### Other examples using promises
-See file *./examples/readme-with-promises.js*
+
+See file _./examples/readme-with-promises.js_
+
 ```js
 const path = require('path');
 const { hashElement } = require('folder-hash');
@@ -458,7 +475,8 @@ hashElement(__dirname, options)
 ```
 
 ### Other examples using error-first callbacks
-See *./examples/readme-with-callbacks.js*
+
+See _./examples/readme-with-callbacks.js_
 
 ```js
 const path = require('path');
@@ -466,42 +484,42 @@ const { hashElement } = require('folder-hash');
 
 // pass element name and folder path separately
 hashElement('test', path.join(__dirname, '..'), (error, hash) => {
-    if (error) {
-        return console.error('hashing failed:', error);
-    } else {
-        console.log('Result for folder "../test":', hash.toString(), '\n');
-    }
+  if (error) {
+    return console.error('hashing failed:', error);
+  } else {
+    console.log('Result for folder "../test":', hash.toString(), '\n');
+  }
 });
 
 // pass element path directly
 hashElement(__dirname, (error, hash) => {
-    if (error) {
-        return console.error('hashing failed:', error);
-    } else {
-        console.log('Result for folder "' + __dirname + '":');
-        console.log(hash.toString(), '\n');
-    }
+  if (error) {
+    return console.error('hashing failed:', error);
+  } else {
+    console.log('Result for folder "' + __dirname + '":');
+    console.log(hash.toString(), '\n');
+  }
 });
 
 // pass options (example: exclude dotFiles)
 const options = { algo: 'md5', files: { exclude: ['.*'], matchBasename: true } };
 hashElement(__dirname, options, (error, hash) => {
-    if (error) {
-        return console.error('hashing failed:', error);
-    } else {
-        console.log('Result for folder "' + __dirname + '":');
-        console.log(hash.toString());
-    }
+  if (error) {
+    return console.error('hashing failed:', error);
+  } else {
+    console.log('Result for folder "' + __dirname + '":');
+    console.log(hash.toString());
+  }
 });
 ```
 
-
 ## Behavior
+
 The behavior is documented and verified in the unit tests. Execute `npm test` or `mocha test`, and have a look at the _test_ subfolder.  
 You can also have a look at the [CircleCI report. ![CircleCI](https://circleci.com/gh/marc136/node-folder-hash/tree/master.svg?style=svg)](https://circleci.com/gh/marc136/node-folder-hash/tree/master)
 
-
 ### Creating hashes over files (with default options)
+
 **The hashes are the same if:**
 
 - A file is checked again
@@ -514,6 +532,7 @@ You can also have a look at the [CircleCI report. ![CircleCI](https://circleci.c
 - Two files have the same content but different names
 
 ### Creating hashes over folders (with default options)
+
 Content means in this case a folder's children - both the files and the subfolders with their children.
 
 **The hashes are the same if:**
@@ -528,4 +547,5 @@ Content means in this case a folder's children - both the files and the subfolde
 - Two folders have the same content but different names
 
 ## License
+
 MIT, see LICENSE.txt

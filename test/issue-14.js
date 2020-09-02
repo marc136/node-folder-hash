@@ -5,7 +5,7 @@ describe('Issue 14: Create hashes only over the file content (basename is ignore
   const expected = 'BA8G/XdAkkeNRQd09bowxdp4rMg=';
   const fs = Volume.fromJSON({
     'folder/file.txt': 'content',
-    'folder/2ndfile.txt': 'content'
+    'folder/2ndfile.txt': 'content',
   });
   const hashElement = folderHash.prep(fs, Promise);
   const folder = 'folder';
@@ -14,13 +14,13 @@ describe('Issue 14: Create hashes only over the file content (basename is ignore
     const options = { files: { ignoreRootName: true } };
 
     const files = fs.readdirSync(folder);
-    return Promise.all(
-      files.map(basename => hashElement(basename, folder, options))
-    ).then(hashes => {
-      hashes[0].name.should.not.equal(hashes[1].name);
-      hashes[0].hash.should.equal(hashes[1].hash);
-      hashes[0].hash.should.equal(expected);
-    });
+    return Promise.all(files.map(basename => hashElement(basename, folder, options))).then(
+      hashes => {
+        hashes[0].name.should.not.equal(hashes[1].name);
+        hashes[0].hash.should.equal(hashes[1].hash);
+        hashes[0].hash.should.equal(expected);
+      },
+    );
   });
 
   it('in folder-hash > 3.0.x', function () {
@@ -32,7 +32,6 @@ describe('Issue 14: Create hashes only over the file content (basename is ignore
     });
   });
 });
-
 
 /*
 it.only('generates the same hash if two files have the same content and ignoreBasename is set', function () {

@@ -1,6 +1,6 @@
 /**
  * Shows how the exclude option can be used with a function.
- * 
+ *
  * Real-life usage could be to exclude gitignored files
  */
 
@@ -17,11 +17,11 @@ function shouldExclude(name) {
 
 hashElement('../', {
   files: {
-    exclude: shouldExclude
+    exclude: shouldExclude,
   },
   folders: {
-    exclude: shouldExclude
-  }
+    exclude: shouldExclude,
+  },
 }).then(hash => {
-  console.log('hash of everything that is not gitignored: ', hash)
+  console.log('hash of everything that is not gitignored: ', hash);
 });
