@@ -312,7 +312,7 @@ const HashedFolder = function HashedFolder(name, children, options, isRootElemen
 };
 
 HashedFolder.prototype.toString = function (padding = '') {
-    const first = `${padding}{ name: '${this.name}', hash: '${this.hash},'\n`;
+    const first = `${padding}{ name: '${this.name}', hash: '${this.hash}' },\n`;
     padding += '  ';
 
     return `${first}${padding}children: ${this.childrenToString(padding)}}`;
