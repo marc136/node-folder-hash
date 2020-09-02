@@ -10,6 +10,7 @@
     "start": "node sample.js",
     "test": "mocha --reporter spec test",
     "cover": "nyc mocha test",
+    "format": "prettier --write *.js examples/ test/",
     "doc": "./node_modules/.bin/jsdoc index.js -R README.md -d doc"
   },
   "author": {
@@ -46,7 +47,8 @@
     "jsdoc": "3.6.5",
     "memfs": "^3.0.4",
     "mocha": "^8.0.1",
-    "nyc": "^15.0.0"
+    "nyc": "^15.0.0",
+    "prettier": "~2.1.1"
   },
   "engines": {
     "node": ">=10.10.0"
