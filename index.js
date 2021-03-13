@@ -109,9 +109,11 @@ function prep(fs) {
     }
 
     return fs.promises.readdir(folderPath, { withFileTypes: true }).then(files => {
-      const children = files.sort().map(child => {
-        return hashElementPromise(child, folderPath, options);
-      });
+      const children = files
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map(child => {
+          return hashElementPromise(child, folderPath, options);
+        });
 
       return Promise.all(children).then(children => {
         if (ignoreBasenameOnce) options.ignoreBasenameOnce = true;
