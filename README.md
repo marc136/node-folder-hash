@@ -137,7 +137,7 @@ const options = {
 
 ```js
 {
-    algo: 'sha1',       // see crypto.getHashes() for options
+    algo: 'sha1',       // see crypto.getHashes() for options in your node.js REPL
     encoding: 'base64', // 'base64', 'hex' or 'binary'
     files: {
         exclude: [],
