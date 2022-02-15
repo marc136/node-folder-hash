@@ -35,20 +35,20 @@
     "report-dir": "test_coverage"
   },
   "dependencies": {
-    "debug": "^4.1.1",
-    "graceful-fs": "~4.2.0",
-    "minimatch": "~3.0.4"
+    "debug": "^4.3.3",
+    "graceful-fs": "~4.2.9",
+    "minimatch": "~5.0.0"
   },
   "devDependencies": {
-    "chai": "^4.0.2",
+    "chai": "^4.3.6",
     "chai-as-promised": "^7.1.1",
     "clone": "^2.1.2",
-    "ignore": "^5.1.2",
-    "jsdoc": "3.6.7",
-    "memfs": "^3.0.4",
-    "mocha": "^9.0.1",
-    "nyc": "^15.0.0",
-    "prettier": "~2.2.1"
+    "ignore": "^5.2.0",
+    "jsdoc": "3.6.10",
+    "memfs": "^3.4.1",
+    "mocha": "^9.2.0",
+    "nyc": "^15.1.0",
+    "prettier": "~2.5.1"
   },
   "engines": {
     "node": ">=10.10.0"
