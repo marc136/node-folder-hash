@@ -155,13 +155,11 @@ const options = {
         ignoreRootName: false
     },
     symbolicLinks: {
-        symbolicLinks: {
         include: true,
         ignoreBasename: false,
         ignoreTargetPath: true,
         ignoreTargetContent: false,
         ignoreTargetContentAfterError: false,
-      }
     }
 }
 ```
