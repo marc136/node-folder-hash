@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.0.2 (2022-02-15)
+- Update dependencies
+- Minor changes to README
+
 ## 4.0.1 (2021-03-13)
 - Fix sorting of files #90
 
