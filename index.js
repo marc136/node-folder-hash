@@ -40,9 +40,13 @@ const log = {
   },
   err: debug('fhash:err'),
   symlink: debug('fhash:symlink'),
+  queue: debug('fhash:queue'),
 };
 
 function prep(fs) {
+  let queue = []
+  let queueTimer = undefined
+
   function hashElement(name, dir, options, callback) {
     callback = arguments[arguments.length - 1];
 
@@ -83,16 +87,45 @@ function prep(fs) {
    */
   function hashElementPromise(stats, dirname, options, isRootElement = false) {
     const name = stats.name;
+    let promise = undefined
     if (stats.isDirectory()) {
-      return hashFolderPromise(name, dirname, options, isRootElement);
+      promise = hashFolderPromise(name, dirname, options, isRootElement);
     } else if (stats.isFile()) {
-      return hashFilePromise(name, dirname, options, isRootElement);
+      promise = hashFilePromise(name, dirname, options, isRootElement);
     } else if (stats.isSymbolicLink()) {
-      return hashSymLinkPromise(name, dirname, options, isRootElement);
+      promise = hashSymLinkPromise(name, dirname, options, isRootElement);
     } else {
       log.err('hashElementPromise cannot handle ', stats);
-      return { name, hash: 'Error: unknown element type' };
+      return Promise.resolve({ name, hash: 'Error: unknown element type' });
     }
+
+    return promise.catch(err => {
+      if (err.code && (err.code === 'EMFILE' || err.code === 'ENFILE')) {
+        log.queue(`queued ${dirname}/${name} because of ${err.code}`)
+
+        const promise = new Promise((resolve, reject) => {
+          queue.push(() => {
+            log.queue(`Will processs queued ${dirname}/${name}`)
+            return hashElementPromise(stats, dirname, options, isRootElement)
+              .then(ok => resolve(ok)).catch(err => reject(err))
+          })
+        })
+
+        if (queueTimer === undefined) {
+          queueTimer = setTimeout(processQueue, 0)
+        }
+        return promise
+      }
+
+      throw err
+    })
+  }
+
+  function processQueue() {
+    queueTimer = undefined
+    const runnables = queue
+    queue = []
+    runnables.forEach(run => run())
   }
 
   function hashFolderPromise(name, dir, options, isRootElement = false) {
@@ -131,7 +164,7 @@ function prep(fs) {
       log.match(`skipped '${filePath}'`);
       delete options.skipMatching;
     } else if (ignore(name, filePath, options.files)) {
-      return undefined;
+      return Promise.resolve(undefined);
     }
 
     return new Promise((resolve, reject) => {
