@@ -178,6 +178,7 @@ function prep(fs) {
         }
 
         const f = fs.createReadStream(filePath);
+        f.on('error', err => { reject(err) })
         f.pipe(hash, { end: false });
 
         f.on('end', () => {
@@ -411,7 +412,7 @@ function reduceGlobPatterns(globs) {
 
 module.exports = {
   defaults: defaultOptions,
-  hashElement: prep(require('graceful-fs')),
+  hashElement: prep(require('fs')),
   // exposed for testing
   prep,
   parseParameters,
