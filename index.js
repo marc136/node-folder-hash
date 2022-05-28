@@ -128,7 +128,7 @@ function prep(fs) {
     runnables.forEach(run => run())
   }
 
-  function hashFolderPromise(name, dir, options, isRootElement = false) {
+  async function hashFolderPromise(name, dir, options, isRootElement = false) {
     const folderPath = path.join(dir, name);
     let ignoreBasenameOnce = options.ignoreBasenameOnce;
     delete options.ignoreBasenameOnce;
@@ -141,19 +141,15 @@ function prep(fs) {
       return undefined;
     }
 
-    return fs.promises.readdir(folderPath, { withFileTypes: true }).then(files => {
-      const children = files
-        .sort((a, b) => a.name.localeCompare(b.name))
-        .map(child => {
-          return hashElementPromise(child, folderPath, options);
-        });
+    const files = await fs.promises.readdir(folderPath, { withFileTypes: true })
+    const children = await Promise.all(files
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(child => hashElementPromise(child, folderPath, options))
+    )
 
-      return Promise.all(children).then(children => {
-        if (ignoreBasenameOnce) options.ignoreBasenameOnce = true;
-        const hash = new HashedFolder(name, children.filter(notUndefined), options, isRootElement);
-        return hash;
-      });
-    });
+    if (ignoreBasenameOnce) options.ignoreBasenameOnce = true;
+    const hash = new HashedFolder(name, children.filter(notUndefined), options, isRootElement);
+    return hash;
   }
 
   function hashFilePromise(name, dir, options, isRootElement = false) {
