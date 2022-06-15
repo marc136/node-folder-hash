@@ -5,7 +5,7 @@
 
 const defaultOptions = {
   algo: 'sha1', // see crypto.getHashes() for options
-  encoding: 'base64', // 'base64', 'hex' or 'binary'
+  encoding: 'base64', // 'base64', 'base64url', 'hex' or 'binary'
   files: {
     exclude: [],
     include: [],
