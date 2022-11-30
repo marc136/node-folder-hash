@@ -37,7 +37,7 @@
   "dependencies": {
     "debug": "^4.3.3",
     "graceful-fs": "~4.2.9",
-    "minimatch": "~5.0.0"
+    "minimatch": "~5.1.1"
   },
   "devDependencies": {
     "chai": "^4.3.6",
