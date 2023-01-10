@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.0.3 (2023-01-10)
+- Fix #146 and remove `graceful-fs`
+- Update dependencies
+
 ## 4.0.2 (2022-02-15)
 - Update dependencies
 - Minor changes to README
