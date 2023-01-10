@@ -3,4 +3,5 @@ sample-folder
 doc/**
 test_coverage/**
 .nyc_output
+.npmrc
 .idea
