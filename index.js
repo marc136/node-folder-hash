@@ -44,8 +44,8 @@ const log = {
 };
 
 function prep(fs) {
-  let queue = []
-  let queueTimer = undefined
+  let queue = [];
+  let queueTimer = undefined;
 
   function hashElement(name, dir, options, callback) {
     callback = arguments[arguments.length - 1];
@@ -87,7 +87,7 @@ function prep(fs) {
    */
   function hashElementPromise(stats, dirname, options, isRootElement = false) {
     const name = stats.name;
-    let promise = undefined
+    let promise = undefined;
     if (stats.isDirectory()) {
       promise = hashFolderPromise(name, dirname, options, isRootElement);
     } else if (stats.isFile()) {
@@ -101,31 +101,32 @@ function prep(fs) {
 
     return promise.catch(err => {
       if (err.code && (err.code === 'EMFILE' || err.code === 'ENFILE')) {
-        log.queue(`queued ${dirname}/${name} because of ${err.code}`)
+        log.queue(`queued ${dirname}/${name} because of ${err.code}`);
 
         const promise = new Promise((resolve, reject) => {
           queue.push(() => {
-            log.queue(`Will processs queued ${dirname}/${name}`)
+            log.queue(`Will processs queued ${dirname}/${name}`);
             return hashElementPromise(stats, dirname, options, isRootElement)
-              .then(ok => resolve(ok)).catch(err => reject(err))
-          })
-        })
+              .then(ok => resolve(ok))
+              .catch(err => reject(err));
+          });
+        });
 
         if (queueTimer === undefined) {
-          queueTimer = setTimeout(processQueue, 0)
+          queueTimer = setTimeout(processQueue, 0);
         }
-        return promise
+        return promise;
       }
 
-      throw err
-    })
+      throw err;
+    });
   }
 
   function processQueue() {
-    queueTimer = undefined
-    const runnables = queue
-    queue = []
-    runnables.forEach(run => run())
+    queueTimer = undefined;
+    const runnables = queue;
+    queue = [];
+    runnables.forEach(run => run());
   }
 
   async function hashFolderPromise(name, dir, options, isRootElement = false) {
@@ -141,11 +142,12 @@ function prep(fs) {
       return undefined;
     }
 
-    const files = await fs.promises.readdir(folderPath, { withFileTypes: true })
-    const children = await Promise.all(files
-      .sort((a, b) => a.name.localeCompare(b.name))
-      .map(child => hashElementPromise(child, folderPath, options))
-    )
+    const files = await fs.promises.readdir(folderPath, { withFileTypes: true });
+    const children = await Promise.all(
+      files
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map(child => hashElementPromise(child, folderPath, options)),
+    );
 
     if (ignoreBasenameOnce) options.ignoreBasenameOnce = true;
     const hash = new HashedFolder(name, children.filter(notUndefined), options, isRootElement);
@@ -178,7 +180,9 @@ function prep(fs) {
         }
 
         const f = fs.createReadStream(filePath);
-        f.on('error', err => { reject(err) })
+        f.on('error', err => {
+          reject(err);
+        });
         f.pipe(hash, { end: false });
 
         f.on('end', () => {
