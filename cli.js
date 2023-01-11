@@ -1,4 +1,4 @@
-const fs = require('graceful-fs');
+const fs = require('fs');
 const lib = require('./index');
 
 function program(cliArgs) {
