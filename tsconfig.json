@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "target": "ES2015",
+    "module": "commonjs",
+    "moduleResolution": "node"
+  },
+  "include": ["index.ts", "cli.ts"]
+}

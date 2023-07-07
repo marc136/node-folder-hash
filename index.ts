@@ -1,7 +1,8 @@
-﻿const crypto = require('crypto'),
-  debug = require('debug'),
-  minimatch = require('minimatch'),
-  path = require('path');
+﻿import * as crypto from 'crypto';
+import debug from 'debug'
+import {minimatch} from 'minimatch'
+import * as path from 'path'
+import type * as fsModule from 'fs'
 
 const defaultOptions = {
   algo: 'sha1', // see crypto.getHashes() for options
@@ -43,11 +44,41 @@ const log = {
   queue: debug('fhash:queue'),
 };
 
-function prep(fs) {
+type HashedEntity = HashedFolder | HashedFile
+
+interface MatchOptions {
+  exclude: string[]
+  include: string[]
+  matchBasename: boolean
+  matchPath: boolean
+  ignoreBasename: boolean
+  ignoreRootName: boolean
+}
+type Options = {
+  skipMatching: boolean
+  algo: string
+  encoding: crypto.BinaryToTextEncoding
+  ignoreBasenameOnce?: boolean
+  files: MatchOptions
+  folders: MatchOptions
+  symbolicLinks: {
+    include: boolean
+    ignoreBasename: boolean
+    ignoreTargetPath: boolean
+    ignoreTargetContent: boolean
+    ignoreTargetContentAfterError: boolean
+  }
+}
+type Callback = (err: Error, result?: HashedEntity) => void
+
+export function prep(fs: typeof fsModule) {
   let queue = [];
   let queueTimer = undefined;
 
-  function hashElement(name, dir, options, callback) {
+  function hashElement(name: string, options?: Options, callback?: Callback): Promise<HashedEntity>;
+  function hashElement(name: string, dir: string, callback?: Callback): Promise<HashedEntity>;
+  function hashElement(name: string, dir: string, options?: Options, callback?: Callback): Promise<HashedEntity>;
+  function hashElement(name: string, dir: string | Options, options?: Options | Callback, callback?: Callback): Promise<HashedEntity | void> {
     callback = arguments[arguments.length - 1];
     const base = name;
 
@@ -58,10 +89,11 @@ function prep(fs) {
         return fs.promises
           .lstat(path.join(dir, basename))
           .then(stats => {
-            stats.name = basename;
+            // @ts-expect-error
+            stats.name = basename
             return stats;
           })
-          .then(stats => hashElementPromise(stats, dir, base, options, true));
+          .then((stats: fsModule.Stats & {name: string}) => hashElementPromise(stats, dir, base, options, true));
       })
       .then(result => {
         if (isFunction(callback)) {
@@ -87,7 +119,7 @@ function prep(fs) {
    * @param {Options} options
    * @param {boolean} isRootElement
    */
-  function hashElementPromise(stats, dirname, base, options, isRootElement = false) {
+  function hashElementPromise(stats: (fsModule.Stats & {name: string}) | fsModule.Dirent, dirname: string, base: string, options: Options, isRootElement = false): Promise<HashedEntity> {
     const name = stats.name;
     let promise = undefined;
     if (stats.isDirectory()) {
@@ -131,7 +163,7 @@ function prep(fs) {
     runnables.forEach(run => run());
   }
 
-  async function hashFolderPromise(name, dir, base, options, isRootElement = false) {
+  async function hashFolderPromise(name: string, dir: string, base: string, options: Options, isRootElement = false) {
     const folderPath = path.join(dir, name);
     let ignoreBasenameOnce = options.ignoreBasenameOnce;
     delete options.ignoreBasenameOnce;
@@ -156,7 +188,7 @@ function prep(fs) {
     return hash;
   }
 
-  function hashFilePromise(name, dir, base, options, isRootElement = false) {
+  function hashFilePromise(name: string, dir: string, base: string, options: Options, isRootElement = false) {
     const filePath = path.join(dir, name);
 
     if (options.skipMatching) {
@@ -197,7 +229,7 @@ function prep(fs) {
     });
   }
 
-  async function hashSymLinkPromise(name, dir, base, options, isRootElement = false) {
+  async function hashSymLinkPromise(name: string, dir: string, base: string, options: Options, isRootElement = false) {
     const target = await fs.promises.readlink(path.join(dir, name));
     log.symlink(`handling symbolic link ${name} -> ${target}`);
     if (options.symbolicLinks.include) {
@@ -212,7 +244,7 @@ function prep(fs) {
     }
   }
 
-  function symLinkIgnoreTargetContent(name, target, options, isRootElement) {
+  function symLinkIgnoreTargetContent(name, target, options: Options, isRootElement) {
     delete options.skipMatching; // only used for the root level
     log.symlink('ignoring symbolic link target content');
     const hash = crypto.createHash(options.algo);
@@ -234,8 +266,8 @@ function prep(fs) {
     }
 
     try {
-      const stats = await fs.promises.stat(path.join(dir, name));
-      stats.name = name;
+      const stats = await fs.promises.stat(path.join(dir, name)) as fsModule.Stats & {name: string};
+      stats.name = name
       const temp = await hashElementPromise(stats, dir, base, options, isRootElement);
 
       if (!options.symbolicLinks.ignoreTargetPath) {
@@ -274,7 +306,7 @@ function prep(fs) {
     return result
   }
 
-  function ignore(name, path, root, rules) {
+  function ignore(name: string, path: string, root: string, rules) {
     path = stripBase(path, root)
 
     if (rules.exclude) {
@@ -306,7 +338,7 @@ function prep(fs) {
   return hashElement;
 }
 
-function parseParameters(args) {
+export function parseParameters(args): Promise<{basename: string, dir: string, options: Options}> {
   let basename = args[0],
     dir = args[1],
     options_ = args[2];
@@ -328,7 +360,6 @@ function parseParameters(args) {
     encoding: options_.encoding || defaultOptions.encoding,
     files: Object.assign({}, defaultOptions.files, options_.files),
     folders: Object.assign({}, defaultOptions.folders, options_.folders),
-    match: Object.assign({}, defaultOptions.match, options_.match),
     symbolicLinks: Object.assign({}, defaultOptions.symbolicLinks, options_.symbolicLinks),
   };
 
@@ -341,55 +372,65 @@ function parseParameters(args) {
   return Promise.resolve(log.params({ basename, dir, options }));
 }
 
-const HashedFolder = function HashedFolder(name, children, options, isRootElement = false) {
-  this.name = name;
-  this.children = children;
+class HashedFolder {
+  name: string
+  hash: string
+  children: HashedEntity[]
+  constructor(name: string, children: HashedEntity[], options, isRootElement = false) {
+    this.name = name;
+    this.children = children;
 
-  const hash = crypto.createHash(options.algo);
-  if (
-    options.folders.ignoreBasename ||
-    options.ignoreBasenameOnce ||
-    (isRootElement && options.folders.ignoreRootName)
-  ) {
-    delete options.ignoreBasenameOnce;
-    log.match(`omitted name of folder ${name} from hash`);
-  } else {
-    hash.update(name);
-  }
-  children.forEach(child => {
-    if (child.hash) {
-      hash.update(child.hash);
+    const hash = crypto.createHash(options.algo);
+    if (
+      options.folders.ignoreBasename ||
+      options.ignoreBasenameOnce ||
+      (isRootElement && options.folders.ignoreRootName)
+    ) {
+      delete options.ignoreBasenameOnce;
+      log.match(`omitted name of folder ${name} from hash`);
+    } else {
+      hash.update(name);
     }
-  });
+    children.forEach(child => {
+      if (child.hash) {
+        hash.update(child.hash);
+      }
+    });
 
-  this.hash = hash.digest(options.encoding);
-};
-
-HashedFolder.prototype.toString = function (padding = '') {
-  const first = `${padding}{ name: '${this.name}', hash: '${this.hash}',\n`;
-  padding += '  ';
-
-  return `${first}${padding}children: ${this.childrenToString(padding)}}`;
-};
-
-HashedFolder.prototype.childrenToString = function (padding = '') {
-  if (this.children.length === 0) {
-    return '[]';
-  } else {
-    const nextPadding = padding + '  ';
-    const children = this.children.map(child => child.toString(nextPadding)).join('\n');
-    return `[\n${children}\n${padding}]`;
+    this.hash = hash.digest(options.encoding);
   }
-};
 
-const HashedFile = function HashedFile(name, hash, encoding) {
-  this.name = name;
-  this.hash = hash.digest(encoding);
-};
+  toString(padding = '') {
+    const first = `${padding}{ name: '${this.name}', hash: '${this.hash}',\n`;
+    padding += '  ';
 
-HashedFile.prototype.toString = function (padding = '') {
-  return padding + "{ name: '" + this.name + "', hash: '" + this.hash + "' }";
-};
+    return `${first}${padding}children: ${this.childrenToString(padding)}}`;
+  }
+
+  childrenToString(padding = '') {
+    if (this.children.length === 0) {
+      return '[]';
+    } else {
+      const nextPadding = padding + '  ';
+      const children = this.children.map(child => child.toString(nextPadding)).join('\n');
+      return `[\n${children}\n${padding}]`;
+    }
+  }
+}
+
+class HashedFile {
+  name: string
+  hash: string
+
+  constructor(name: string, hash: crypto.Hash, encoding: crypto.BinaryToTextEncoding) {
+    this.name = name;
+    this.hash = hash.digest(encoding);
+  }
+
+  toString(padding = '') {
+    return padding + "{ name: '" + this.name + "', hash: '" + this.hash + "' }";
+  }
+}
 
 function isFunction(any) {
   return typeof any === 'function';
@@ -417,18 +458,17 @@ function reduceGlobPatterns(globs) {
     const regex = new RegExp(
       globs
         .reduce((acc, exclude) => {
-          return acc + '|' + minimatch.makeRe(exclude).source;
+          const re = minimatch.makeRe(exclude)
+          if (!re) {
+            throw new Error(`Failed to parse glob: ${exclude}`);
+          }
+          return acc + '|' + re.source;
         }, '')
-        .substr(1),
+        .substring(1),
     );
     return param => regex.test(param);
   }
 }
 
-module.exports = {
-  defaults: defaultOptions,
-  hashElement: prep(require('fs')),
-  // exposed for testing
-  prep,
-  parseParameters,
-};
+export const hashElement = prep(require('fs'))
+export const defaults = defaultOptions
