@@ -49,6 +49,7 @@ function prep(fs) {
 
   function hashElement(name, dir, options, callback) {
     callback = arguments[arguments.length - 1];
+    const base = name;
 
     return parseParameters(arguments)
       .then(({ basename, dir, options }) => {
@@ -60,7 +61,7 @@ function prep(fs) {
             stats.name = basename;
             return stats;
           })
-          .then(stats => hashElementPromise(stats, dir, options, true));
+          .then(stats => hashElementPromise(stats, dir, base, options, true));
       })
       .then(result => {
         if (isFunction(callback)) {
@@ -82,18 +83,19 @@ function prep(fs) {
   /**
    * @param {fs.Stats} stats folder element, can also be of type fs.Dirent
    * @param {string} dirname
+   * @param {string} base
    * @param {Options} options
    * @param {boolean} isRootElement
    */
-  function hashElementPromise(stats, dirname, options, isRootElement = false) {
+  function hashElementPromise(stats, dirname, base, options, isRootElement = false) {
     const name = stats.name;
     let promise = undefined;
     if (stats.isDirectory()) {
-      promise = hashFolderPromise(name, dirname, options, isRootElement);
+      promise = hashFolderPromise(name, dirname, base, options, isRootElement);
     } else if (stats.isFile()) {
-      promise = hashFilePromise(name, dirname, options, isRootElement);
+      promise = hashFilePromise(name, dirname, base, options, isRootElement);
     } else if (stats.isSymbolicLink()) {
-      promise = hashSymLinkPromise(name, dirname, options, isRootElement);
+      promise = hashSymLinkPromise(name, dirname, base, options, isRootElement);
     } else {
       log.err('hashElementPromise cannot handle ', stats);
       return Promise.resolve({ name, hash: 'Error: unknown element type' });
@@ -106,7 +108,7 @@ function prep(fs) {
         const promise = new Promise((resolve, reject) => {
           queue.push(() => {
             log.queue(`Will processs queued ${dirname}/${name}`);
-            return hashElementPromise(stats, dirname, options, isRootElement)
+            return hashElementPromise(stats, dirname, base, options, isRootElement)
               .then(ok => resolve(ok))
               .catch(err => reject(err));
           });
@@ -129,7 +131,7 @@ function prep(fs) {
     runnables.forEach(run => run());
   }
 
-  async function hashFolderPromise(name, dir, options, isRootElement = false) {
+  async function hashFolderPromise(name, dir, base, options, isRootElement = false) {
     const folderPath = path.join(dir, name);
     let ignoreBasenameOnce = options.ignoreBasenameOnce;
     delete options.ignoreBasenameOnce;
@@ -138,7 +140,7 @@ function prep(fs) {
       // this is currently only used for the root folder
       log.match(`skipped '${folderPath}'`);
       delete options.skipMatching;
-    } else if (ignore(name, folderPath, options.folders)) {
+    } else if (ignore(name, folderPath, base, options.folders)) {
       return undefined;
     }
 
@@ -146,7 +148,7 @@ function prep(fs) {
     const children = await Promise.all(
       files
         .sort((a, b) => a.name.localeCompare(b.name))
-        .map(child => hashElementPromise(child, folderPath, options)),
+        .map(child => hashElementPromise(child, folderPath, base, options)),
     );
 
     if (ignoreBasenameOnce) options.ignoreBasenameOnce = true;
@@ -154,14 +156,14 @@ function prep(fs) {
     return hash;
   }
 
-  function hashFilePromise(name, dir, options, isRootElement = false) {
+  function hashFilePromise(name, dir, base, options, isRootElement = false) {
     const filePath = path.join(dir, name);
 
     if (options.skipMatching) {
       // this is currently only used for the root folder
       log.match(`skipped '${filePath}'`);
       delete options.skipMatching;
-    } else if (ignore(name, filePath, options.files)) {
+    } else if (ignore(name, filePath, base, options.files)) {
       return Promise.resolve(undefined);
     }
 
@@ -195,14 +197,14 @@ function prep(fs) {
     });
   }
 
-  async function hashSymLinkPromise(name, dir, options, isRootElement = false) {
+  async function hashSymLinkPromise(name, dir, base, options, isRootElement = false) {
     const target = await fs.promises.readlink(path.join(dir, name));
     log.symlink(`handling symbolic link ${name} -> ${target}`);
     if (options.symbolicLinks.include) {
       if (options.symbolicLinks.ignoreTargetContent) {
         return symLinkIgnoreTargetContent(name, target, options, isRootElement);
       } else {
-        return symLinkResolve(name, dir, target, options, isRootElement);
+        return symLinkResolve(name, dir, base, target, options, isRootElement);
       }
     } else {
       log.symlink('skipping symbolic link');
@@ -225,7 +227,7 @@ function prep(fs) {
     return Promise.resolve(new HashedFile(name, hash, options.encoding));
   }
 
-  async function symLinkResolve(name, dir, target, options, isRootElement) {
+  async function symLinkResolve(name, dir, base, target, options, isRootElement) {
     delete options.skipMatching; // only used for the root level
     if (options.symbolicLinks.ignoreBasename) {
       options.ignoreBasenameOnce = true;
@@ -234,7 +236,7 @@ function prep(fs) {
     try {
       const stats = await fs.promises.stat(path.join(dir, name));
       stats.name = name;
-      const temp = await hashElementPromise(stats, dir, options, isRootElement);
+      const temp = await hashElementPromise(stats, dir, base, options, isRootElement);
 
       if (!options.symbolicLinks.ignoreTargetPath) {
         const hash = crypto.createHash(options.algo);
@@ -265,7 +267,16 @@ function prep(fs) {
     }
   }
 
-  function ignore(name, path, rules) {
+  function stripBase(path, base) {
+    let result = path.replace(base, '')
+    if (result.startsWith('/')) result = result.substring(1)
+
+    return result
+  }
+
+  function ignore(name, path, root, rules) {
+    path = stripBase(path, root)
+
     if (rules.exclude) {
       if (rules.matchBasename && rules.exclude(name)) {
         log.match(`exclude basename '${name}'`);
