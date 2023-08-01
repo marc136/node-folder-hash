@@ -1,5 +1,5 @@
-const fs = require('fs');
-const lib = require('./index');
+import * as fs from 'fs';
+import * as lib from './index';
 
 function program(cliArgs) {
   let args;
@@ -64,7 +64,7 @@ function parseArgs(args) {
 }
 
 function error(err) {
-  console.error('ERROR:', ex.message || ex.name || ex);
+  console.error('ERROR:', err.message || err.name || err);
   process.exit(1);
 }
 

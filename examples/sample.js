@@ -1,7 +1,7 @@
 ﻿const crypto = require('crypto'),
   path = require('path');
 
-const hashFolder = require('../index.js');
+const hashFolder = require('../index.ts');
 
 console.log(`Known hash algorithms:\n'${crypto.getHashes().join(`', '`)}'\n`);
 

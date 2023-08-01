@@ -5,3 +5,7 @@ test_coverage/**
 .nyc_output
 .npmrc
 .idea
+index.d.ts
+index.js
+cli.d.ts
+cli.js
