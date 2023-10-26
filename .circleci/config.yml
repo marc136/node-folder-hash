@@ -6,10 +6,6 @@ workflows:
       - cover:
           version: '10'
       - cover:
-          version: '12'
-      - cover:
-          version: '14'
-      - cover:
           version: 'lts'
       - cover:
           version: 'current'
