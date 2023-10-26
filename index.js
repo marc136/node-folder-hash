@@ -5,6 +5,7 @@
 
 const defaultOptions = {
   algo: 'sha1', // see crypto.getHashes() for options
+  algoOptions: {},
   encoding: 'base64', // 'base64', 'base64url', 'hex' or 'binary'
   files: {
     exclude: [],
@@ -167,7 +168,7 @@ function prep(fs) {
 
     return new Promise((resolve, reject) => {
       try {
-        const hash = crypto.createHash(options.algo);
+        const hash = crypto.createHash(options.algo, options.algoOptions);
         if (
           options.files.ignoreBasename ||
           options.ignoreBasenameOnce ||
@@ -213,7 +214,7 @@ function prep(fs) {
   function symLinkIgnoreTargetContent(name, target, options, isRootElement) {
     delete options.skipMatching; // only used for the root level
     log.symlink('ignoring symbolic link target content');
-    const hash = crypto.createHash(options.algo);
+    const hash = crypto.createHash(options.algo, options.algoOptions);
     if (!options.symbolicLinks.ignoreBasename && !(isRootElement && options.files.ignoreRootName)) {
       log.symlink('hash basename');
       hash.update(name);
@@ -237,7 +238,7 @@ function prep(fs) {
       const temp = await hashElementPromise(stats, dir, options, isRootElement);
 
       if (!options.symbolicLinks.ignoreTargetPath) {
-        const hash = crypto.createHash(options.algo);
+        const hash = crypto.createHash(options.algo, options.algoOptions);
         hash.update(temp.hash);
         log.symlink('hash targetpath');
         hash.update(target);
@@ -247,7 +248,7 @@ function prep(fs) {
     } catch (err) {
       if (options.symbolicLinks.ignoreTargetContentAfterError) {
         log.symlink(`Ignoring error "${err.code}" when hashing symbolic link ${name}`, err);
-        const hash = crypto.createHash(options.algo);
+        const hash = crypto.createHash(options.algo, options.algoOptions);
         if (
           !options.symbolicLinks.ignoreBasename &&
           !(isRootElement && options.files.ignoreRootName)
@@ -314,6 +315,7 @@ function parseParameters(args) {
   if (!isObject(options_)) options_ = {};
   const options = {
     algo: options_.algo || defaultOptions.algo,
+    algoOptions: options_.algoOptions || defaultOptions.algoOptions,
     encoding: options_.encoding || defaultOptions.encoding,
     files: Object.assign({}, defaultOptions.files, options_.files),
     folders: Object.assign({}, defaultOptions.folders, options_.folders),
@@ -334,7 +336,7 @@ const HashedFolder = function HashedFolder(name, children, options, isRootElemen
   this.name = name;
   this.children = children;
 
-  const hash = crypto.createHash(options.algo);
+  const hash = crypto.createHash(options.algo, options.algoOptions);
   if (
     options.folders.ignoreBasename ||
     options.ignoreBasenameOnce ||
