@@ -35,6 +35,26 @@ describe('Should generate hashes', function () {
       };
       return hashElement(basename, dir, options).then(checkHash);
     });
+
+    it('with algoOptions passed', function () {
+      const checkAlgoOptionHash = result => {
+        should.exist(result);
+        should.exist(result.hash);
+        result.hash.should.equal('d89f885449');
+      };
+
+      var options = {
+        algo: 'shake256',
+        algoOptions: { outputLength: 5 },
+        encoding: 'hex',
+        excludes: [],
+        match: {
+          basename: false,
+          path: false,
+        },
+      };
+      return hashElement(basename, dir, options).then(checkAlgoOptionHash);
+    });
   });
 
   describe('when executed with an error-first callback', function () {
