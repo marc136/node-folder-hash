@@ -4,11 +4,11 @@ workflows:
   run_tests_with_coverage:
     jobs:
       - cover:
-          version: "10"
+          version: '10'
       - cover:
-          version: "lts"
+          version: 'lts'
       - cover:
-          version: "current"
+          version: 'current'
 
 jobs:
   cover:
@@ -26,9 +26,9 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
+            - v1-dependencies-{{ checksum "package.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
 
       - run: npm install
 
