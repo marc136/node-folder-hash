@@ -1,5 +1,5 @@
-﻿Create a hash checksum over a folder or a file.  
-The hashes are propagated upwards, the hash that is returned for a folder is generated over all the hashes of its children.  
+﻿Create a hash checksum over a folder or a file.
+The hashes are propagated upwards, the hash that is returned for a folder is generated over all the hashes of its children.
 The hashes are generated with the _sha1_ algorithm and returned in _base64_ encoding by default.
 
 Each file returns a name and a hash, and each folder returns additionally an array of children (file or folder elements).
@@ -10,7 +10,7 @@ First, install folder-hash with `npm install --save folder-hash` or `yarn add fo
 
 ### Simple example
 
-To see differences to the last version of this package, I would create hashes over all _.js_ and _.json_ files. But ignore everything inside folders starting with a dot, and also from the folders _node_modules_, _test_coverage_. The structure of the options object is documented <a href="#options">below.</a>  
+To see differences to the last version of this package, I would create hashes over all _.js_ and _.json_ files. But ignore everything inside folders starting with a dot, and also from the folders _node_modules_, _test_coverage_. The structure of the options object is documented <a href="#options">below.</a>
 This example is also stored in [./examples/readme-example1.js](/examples/readme-example1.js).
 
 ```js
@@ -56,7 +56,7 @@ Creating a hash over the current folder:
 
 And the structure may be traversed to e.g. create incremental backups.
 
-It is also possible to only match the full path and not the basename. The same configuration could look like this:  
+It is also possible to only match the full path and not the basename. The same configuration could look like this:
 _You should be aware that \*nix and Windows behave differently, so please use caution._
 
 ```js
@@ -138,6 +138,7 @@ const options = {
 ```js
 {
     algo: 'sha1',       // see crypto.getHashes() for options in your node.js REPL
+    algoOptions: {},    // see https://nodejs.org/api/crypto.html#cryptocreatehashalgorithm-options
     encoding: 'base64', // 'base64', 'base64url', 'hex' or 'binary'
     files: {
         exclude: [],
@@ -336,7 +337,7 @@ const options = {
 
 ### Symlink options
 
-Configure, how symbolic links should be hashed.  
+Configure, how symbolic links should be hashed.
 To understand how the options can be combined to create a specific behavior, look into [test/symbolic-links.js](https://github.com/marc136/node-folder-hash/blob/master/test/symbolic-links.js).
 
 <table>
@@ -509,11 +510,22 @@ hashElement(__dirname, options, (error, hash) => {
     console.log(hash.toString());
   }
 });
+
+// pass algoOptions (example: shake256)
+const options = { algo: 'shake256', algoOptions:{ outputLength: 5 }, files: { exclude: ['.*'], matchBasename: true } };
+hashElement(__dirname, options, (error, hash) => {
+  if (error) {
+    return console.error('hashing failed:', error);
+  } else {
+    console.log('Result for folder "' + __dirname + '":');
+    console.log(hash.toString());
+  }
+});
 ```
 
 ## Behavior
 
-The behavior is documented and verified in the unit tests. Execute `npm test` or `mocha test`, and have a look at the _test_ subfolder.  
+The behavior is documented and verified in the unit tests. Execute `npm test` or `mocha test`, and have a look at the _test_ subfolder.
 You can also have a look at the [CircleCI report. ![CircleCI](https://circleci.com/gh/marc136/node-folder-hash/tree/master.svg?style=svg)](https://circleci.com/gh/marc136/node-folder-hash/tree/master)
 
 ### Creating hashes over files (with default options)
