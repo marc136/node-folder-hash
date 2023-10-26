@@ -40,8 +40,10 @@ describe('Should generate hashes', function () {
       // base our expected hash on node version behavior
       // algo options were not available until v12.8
       var v = process.version.split('.');
+      var major = parseInt(v[0].replace('v', ''));
+      var minor = parseInt(v[1]);
       var expectedHash =
-        parseInt(v[0].replace('v', '')) >= 12 && parseInt(v[1]) >= 8
+        major > 12 || (major === 12 && minor >= 8)
           ? 'd89f885449'
           : 'd89f8854493c06a3bea8deffaee1c43d7e29e8b140122f17829bb8ad73950cbc';
 
