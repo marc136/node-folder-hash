@@ -217,7 +217,7 @@ describe('Generating a hash over a folder, it', function () {
     });
   });
 
-  it('ignores a folder it is both included and excluded', async function () {
+  it('ignores a folder if it is both included and excluded', async function () {
     const hashElement = prep(
       Volume.fromJSON({
         'base/file1': 'content',
@@ -235,10 +235,12 @@ describe('Generating a hash over a folder, it', function () {
       result.children[1].name.should.equal('folder2');
     }
 
+    const include1 = (process.platform === 'win32') ? '*' : '**/*';
+
     await verify({
       folders: {
-        exclude: ['**/folder'],
-        include: ['**/*'],
+        exclude: [path.join('**','folder')],
+        include: [include1],
         matchBasename: false,
         matchPath: true,
       },
