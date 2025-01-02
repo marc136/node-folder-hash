@@ -2,7 +2,7 @@
 //  node examples\readme-with-callbacks.js
 
 const path = require('path');
-const { hashElement } = require('../index.js');
+const { hashElement } = require('../index.ts');
 
 // pass element name and folder path separately
 hashElement('test', path.join(__dirname, '..'), (error, hash) => {
