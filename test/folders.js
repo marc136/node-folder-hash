@@ -235,11 +235,11 @@ describe('Generating a hash over a folder, it', function () {
       result.children[1].name.should.equal('folder2');
     }
 
-    const include1 = (process.platform === 'win32') ? '*' : '**/*';
+    const include1 = process.platform === 'win32' ? '*' : '**/*';
 
     await verify({
       folders: {
-        exclude: [path.join('**','folder')],
+        exclude: [path.join('**', 'folder')],
         include: [include1],
         matchBasename: false,
         matchPath: true,

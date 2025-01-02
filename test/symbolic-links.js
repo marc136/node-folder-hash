@@ -269,8 +269,8 @@ function toHash(strings) {
 
 function resolvePath(string) {
   if (process.platform === 'win32') {
-    return path.posix.resolve(string)
+    return path.posix.resolve(string);
   } else {
-    return path.resolve(string)
+    return path.resolve(string);
   }
 }

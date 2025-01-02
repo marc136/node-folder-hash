@@ -401,7 +401,7 @@ function notUndefined(obj) {
 
 function reduceGlobPatterns(globs, name) {
   if (isFunction(globs)) {
-    log.glob(`Using function to ${name}`)
+    log.glob(`Using function to ${name}`);
     return globs;
   } else if (!globs || !Array.isArray(globs) || globs.length === 0) {
     return undefined;
