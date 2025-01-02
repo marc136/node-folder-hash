@@ -138,6 +138,7 @@ const options = {
 ```js
 {
     algo: 'sha1',       // see crypto.getHashes() for options in your node.js REPL
+    algoOptions: {},    // Allowed for some algorithms, see https://nodejs.org/api/crypto.html#cryptocreatehashalgorithm-options
     encoding: 'base64', // 'base64', 'base64url', 'hex' or 'binary'
     files: {
         exclude: [],
@@ -186,7 +187,20 @@ const options = {
             <td>
                 'sha1'
             </td>
-            <td>checksum algorithm, see options in crypto.getHashes()</td>
+            <td>checksum algorithm, see options in <a href="https://nodejs.org/api/crypto.html#cryptogethashes">crypto.getHashes()</a></td>
+        </tr>
+        <tr>
+            <td>algoOptions</td>
+            <td>
+                <span>Object</span>
+            </td>
+            <td>
+                &lt;optional&gt;<br>
+            </td>
+            <td>
+                {}
+            </td>
+            <td>checksum algorithm options, see <a href="https://nodejs.org/api/crypto.html#cryptocreatehashalgorithm-options">docs</a></td>
         </tr>
         <tr>
             <td>encoding</td>
@@ -513,7 +527,7 @@ hashElement(__dirname, options, (error, hash) => {
 // pass algoOptions (example: shake256)
 // see https://nodejs.org/api/crypto.html#cryptocreatehashalgorithm-options
 // only supported in node v12.8 and higher
-const options = { algo: 'shake256', algoOptions:{ outputLength: 5 }, files: { exclude: ['.*'], matchBasename: true } };
+const options = { algo: 'shake256', algoOptions: { outputLength: 5 }, files: { exclude: ['.*'], matchBasename: true } };
 hashElement(__dirname, options, (error, hash) => {
   if (error) {
     return console.error('hashing failed:', error);
