@@ -509,6 +509,19 @@ hashElement(__dirname, options, (error, hash) => {
     console.log(hash.toString());
   }
 });
+
+// pass algoOptions (example: shake256)
+// see https://nodejs.org/api/crypto.html#cryptocreatehashalgorithm-options
+// only supported in node v12.8 and higher
+const options = { algo: 'shake256', algoOptions:{ outputLength: 5 }, files: { exclude: ['.*'], matchBasename: true } };
+hashElement(__dirname, options, (error, hash) => {
+  if (error) {
+    return console.error('hashing failed:', error);
+  } else {
+    console.log('Result for folder "' + __dirname + '":');
+    console.log(hash.toString());
+  }
+});
 ```
 
 ## Behavior

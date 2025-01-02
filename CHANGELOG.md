@@ -1,6 +1,7 @@
 # Changelog
 
-## Unreleased (2025)
+## 4.1.0 (2025-01-02)
+- Pass options to crypto.createHash from #217
 - Update dependencies
 
 ## 4.0.4 (2023-01-11)
