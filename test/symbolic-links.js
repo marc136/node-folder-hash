@@ -10,8 +10,7 @@ describe('When hashing a symbolic link', async function () {
 
     return hash('.', {}).then(result => {
       const symlink = result.children[1];
-      // symlink.hash.should.equal(mkhash('soft-link', 'content'));
-      symlink.hash.should.equal('BQv/kSJnDNedkXlw/tpcXpf+Mzc=');
+      symlink.hash.should.equal('BQv_kSJnDNedkXlw_tpcXpf-Mzc');
       const target = result.children[0].children[0];
       const msg =
         'The symlink name is part of the hash, the symlink and its target must have different hashes';
@@ -221,8 +220,8 @@ function linkType(type) {
       const options = { symbolicLinks: { ignoreTargetContentAfterError: true } };
 
       return hash('.', options).then(result => {
-        result.children[1].hash.should.equal('2rAbS3Cr1VJjcXABKQhmBD2SS3s=');
-        result.hash.should.equal('EYegpWpT309Zil1L80VZMTy6UZc=');
+        result.children[1].hash.should.equal('2rAbS3Cr1VJjcXABKQhmBD2SS3s');
+        result.hash.should.equal('bxn8LngFvaQzWwEZtqXZc2_cxvw');
       });
     });
 

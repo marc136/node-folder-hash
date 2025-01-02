@@ -11,7 +11,7 @@ describe('Should generate hashes', function () {
   const checkHash = result => {
     should.exist(result);
     should.exist(result.hash);
-    result.hash.should.equal('11OqJSEmDW280Sst6dycitwlfCI=');
+    result.hash.should.equal('11OqJSEmDW280Sst6dycitwlfCI');
   };
 
   describe('when called as a promise', function () {
@@ -26,7 +26,7 @@ describe('Should generate hashes', function () {
     it('with options passed', function () {
       var options = {
         algo: 'sha1',
-        encoding: 'base64',
+        encoding: 'base64url',
         excludes: [],
         match: {
           basename: false,
@@ -75,7 +75,7 @@ describe('Should generate hashes', function () {
     it('with options passed', function () {
       var options = {
         algo: 'sha1',
-        encoding: 'base64',
+        encoding: 'base64url',
         excludes: [],
         match: {
           basename: false,

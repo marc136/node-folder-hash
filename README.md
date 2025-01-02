@@ -139,7 +139,7 @@ const options = {
 {
     algo: 'sha1',       // see crypto.getHashes() for options in your node.js REPL
     algoOptions: {},    // Allowed for some algorithms, see https://nodejs.org/api/crypto.html#cryptocreatehashalgorithm-options
-    encoding: 'base64', // 'base64', 'base64url', 'hex' or 'binary'
+    encoding: 'base64url', // 'base64', 'base64url', 'hex' or 'binary'
     files: {
         exclude: [],
         include: [],
@@ -211,7 +211,7 @@ const options = {
                 &lt;optional&gt;<br>
             </td>
             <td>
-                'base64'
+                'base64url'
             </td>
             <td>encoding of the resulting hash. One of 'base64', 'base64url', 'hex' or 'binary'</td>
         </tr>

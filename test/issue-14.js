@@ -2,7 +2,7 @@ const { Volume, should, inspect } = require('./_common');
 const folderHash = require('../index');
 
 describe('Issue 14: Create hashes only over the file content (basename is ignored)', function () {
-  const expected = 'BA8G/XdAkkeNRQd09bowxdp4rMg=';
+  const expected = 'BA8G_XdAkkeNRQd09bowxdp4rMg';
   const fs = Volume.fromJSON({
     'folder/file.txt': 'content',
     'folder/2ndfile.txt': 'content',

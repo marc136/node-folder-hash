@@ -2,7 +2,7 @@ const { folderHash, should, inspect } = require('./_common');
 const { Volume } = require('memfs');
 
 it('Issue 146: Handle `EMFILE` and `ENFILE` errors gracefully', async function () {
-  const expected = 'BA8G/XdAkkeNRQd09bowxdp4rMg=';
+  const expected = 'BA8G_XdAkkeNRQd09bowxdp4rMg';
   const fs = Volume.fromJSON({
     'folder/file.txt': 'content',
     'folder/file1.txt': 'content',
@@ -29,5 +29,5 @@ it('Issue 146: Handle `EMFILE` and `ENFILE` errors gracefully', async function (
   const result = await hashElement(folder, options);
   // ensure that the errors were raised
   counter.should.be.greaterThanOrEqual(7);
-  result.hash.should.equal('rGaf5+7Q5VwsunfiBL9XobKDio4=');
+  result.hash.should.equal('R2FsYKsO7InBBvZPUwvKGJnRDMI');
 });
