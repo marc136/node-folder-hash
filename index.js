@@ -42,6 +42,7 @@ const log = {
   err: debug('fhash:err'),
   symlink: debug('fhash:symlink'),
   queue: debug('fhash:queue'),
+  glob: debug('fhash:glob'),
 };
 
 function prep(fs) {
@@ -324,10 +325,10 @@ function parseParameters(args) {
   };
 
   // transform match globs to Regex
-  options.files.exclude = reduceGlobPatterns(options.files.exclude);
-  options.files.include = reduceGlobPatterns(options.files.include);
-  options.folders.exclude = reduceGlobPatterns(options.folders.exclude);
-  options.folders.include = reduceGlobPatterns(options.folders.include);
+  options.files.exclude = reduceGlobPatterns(options.files.exclude, 'exclude files');
+  options.files.include = reduceGlobPatterns(options.files.include, 'include files');
+  options.folders.exclude = reduceGlobPatterns(options.folders.exclude, 'exclude folders');
+  options.folders.include = reduceGlobPatterns(options.folders.include, 'include folders');
 
   return Promise.resolve(log.params({ basename, dir, options }));
 }
@@ -398,8 +399,9 @@ function notUndefined(obj) {
   return typeof obj !== 'undefined';
 }
 
-function reduceGlobPatterns(globs) {
+function reduceGlobPatterns(globs, name) {
   if (isFunction(globs)) {
+    log.glob(`Using function to ${name}`)
     return globs;
   } else if (!globs || !Array.isArray(globs) || globs.length === 0) {
     return undefined;
@@ -412,6 +414,7 @@ function reduceGlobPatterns(globs) {
         }, '')
         .substr(1),
     );
+    log.glob(`Reduced glob patterns to ${name}`, { from: globs, to: regex });
     return param => regex.test(param);
   }
 }
