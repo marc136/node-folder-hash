@@ -113,7 +113,7 @@ describe('When symbolicLinks.ignoreTargetContent is true', function () {
       },
     };
     let result = await hash('l2', options);
-    const expected = toHash(['l2', path.resolve('folder/file')]);
+    const expected = toHash(['l2', resolvePath('folder/file')]);
     return result.hash.should.equal(expected);
   });
 
@@ -127,7 +127,7 @@ describe('When symbolicLinks.ignoreTargetContent is true', function () {
       },
     };
     let result = await hash('l2', options);
-    const expected = toHash([path.resolve('folder/file')]);
+    const expected = toHash([resolvePath('folder/file')]);
     return result.hash.should.equal(expected);
   });
 
@@ -140,7 +140,7 @@ describe('When symbolicLinks.ignoreTargetContent is true', function () {
       },
     };
     let result = await hash('l1', options);
-    const expected = toHash(['l1', path.resolve('non-existing')]);
+    const expected = toHash(['l1', resolvePath('non-existing')]);
     return result.hash.should.equal(expected);
   });
 });
@@ -154,7 +154,7 @@ describe('When symbolicLinks.include equals "resolve"', function () {
 
   function hashWithResolvedTargetPath(first, targetPath) {
     const withoutTargetPath = toHash(first);
-    return toHash([withoutTargetPath, path.resolve(targetPath)]);
+    return toHash([withoutTargetPath, resolvePath(targetPath)]);
   }
 
   it('can create a hash over basename file content and target path', async function () {
@@ -239,7 +239,7 @@ function linkType(type) {
       };
 
       return hash('soft-link', options).then(result => {
-        const expected = toHash(['soft-link', path.resolve('non-existing-file')]);
+        const expected = toHash(['soft-link', resolvePath('non-existing-file')]);
         result.hash.should.equal(expected);
       });
     });
@@ -266,4 +266,12 @@ function toHash(strings) {
     hash.update(str);
   }
   return hash.digest(defaultOptions().encoding);
+}
+
+function resolvePath(string) {
+  if (process.platform === 'win32') {
+    return path.posix.resolve(string)
+  } else {
+    return path.resolve.resolve(string)
+  }
 }
