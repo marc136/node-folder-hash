@@ -336,7 +336,7 @@ const options = {
 
 ### Symlink options
 
-Configure, how symbolic links should be hashed.  
+Configure how symbolic links should be hashed.  
 To understand how the options can be combined to create a specific behavior, look into [test/symbolic-links.js](https://github.com/marc136/node-folder-hash/blob/master/test/symbolic-links.js).
 
 <table>
