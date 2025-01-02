@@ -514,7 +514,7 @@ hashElement(__dirname, options, (error, hash) => {
 ## Behavior
 
 The behavior is documented and verified in the unit tests. Execute `npm test` or `mocha test`, and have a look at the _test_ subfolder.  
-You can also have a look at the [CircleCI report. ![CircleCI](https://circleci.com/gh/marc136/node-folder-hash/tree/master.svg?style=svg)](https://circleci.com/gh/marc136/node-folder-hash/tree/master)
+You can also have a look at the [test suite report page](https://github.com/marc136/node-folder-hash/actions/workflows/node.js.yml)
 
 ### Creating hashes over files (with default options)
 
