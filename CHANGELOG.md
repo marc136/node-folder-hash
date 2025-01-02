@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased (2025)
+- Update dependencies
+
 ## 4.0.4 (2023-01-11)
 - Fix #176 by removing `graceful-fs` from `cli.js`
 
