@@ -217,7 +217,7 @@ describe('Generating a hash over a folder, it', function () {
     });
   });
 
-  it('ignores a folder it is both included and excluded', async function () {
+  it('ignores a folder if it is both included and excluded', async function () {
     const hashElement = prep(
       Volume.fromJSON({
         'base/file1': 'content',
@@ -237,8 +237,8 @@ describe('Generating a hash over a folder, it', function () {
 
     await verify({
       folders: {
-        exclude: ['**/folder'],
-        include: ['**/*'],
+        exclude: [path.join('**','folder')],
+        include: [path.join('*')],
         matchBasename: false,
         matchPath: true,
       },
