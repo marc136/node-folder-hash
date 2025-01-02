@@ -1,6 +1,5 @@
 const { defaultOptions, prep, Volume } = require('./_common');
 const crypto = require('crypto'),
-  clone = require('clone'),
   path = require('path');
 
 describe('When hashing a symbolic link', async function () {
