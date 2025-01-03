@@ -7,11 +7,10 @@
     "folder-hash": "bin/folder-hash"
   },
   "scripts": {
-    "start": "node sample.js",
+    "build": "tsc",
     "test": "mocha --reporter spec test",
     "cover": "nyc mocha test",
-    "format": "prettier --write *.js examples/ test/",
-    "doc": "./node_modules/.bin/jsdoc index.js -R README.md -d doc"
+    "format": "prettier --write *.js examples/ test/"
   },
   "author": {
     "name": "Marc Walter",
@@ -39,6 +38,8 @@
     "minimatch": "7.4.6"
   },
   "devDependencies": {
+    "@types/debug": "4.1.12",
+    "@types/node": "22.10.4",
     "chai": "^4.3.6",
     "chai-as-promised": "^7.1.1",
     "ignore": "^5.2.0",
@@ -46,7 +47,8 @@
     "memfs": "^3.4.1",
     "mocha": "11.0.1",
     "nyc": "17.1.0",
-    "prettier": "~2.8.2"
+    "prettier": "~2.8.2",
+    "typescript": "5.7.2"
   },
   "engines": {
     "node": ">=17.0.0"

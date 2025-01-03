@@ -1,11 +1,19 @@
-﻿const crypto = require('crypto'),
+﻿const crypto = require('node:crypto'),
   debug = require('debug'),
   minimatch = require('minimatch'),
-  path = require('path');
+  path = require('node:path');
 
+/**
+ * @import {Encoding, HashedElement, Options, RuleFn, RuleOption} from './types/public';
+ * @import {InnerOptions, MatchRules, ParsedArgs} from './types/internal';
+ */
+
+/**
+ * @type {Options}
+ */
 const defaultOptions = {
   algo: 'sha1', // see crypto.getHashes() for options
-  algoOptions: {},
+  algoOptions: undefined,
   encoding: 'base64url', // 'base64', 'base64url', 'hex' or 'binary'
   files: {
     exclude: [],
@@ -35,7 +43,7 @@ const defaultOptions = {
 // Use the environment variable DEBUG to log output, e.g. `set DEBUG=fhash:*`
 const log = {
   match: debug('fhash:match'),
-  params: params => {
+  params: (/** @type {any} */ params) => {
     debug('fhash:parameters')(params);
     return params;
   },
@@ -45,10 +53,25 @@ const log = {
   glob: debug('fhash:glob'),
 };
 
+/**
+ * @param {typeof import("node:fs")} fs
+ */
 function prep(fs) {
+  /**
+   * @type {(() => any)[]}
+   */
   let queue = [];
+  /**
+   * @type {NodeJS.Timeout | undefined}
+   */
   let queueTimer = undefined;
 
+  /**
+   * @param {string} name
+   * @param {string} dir
+   * @param {Options} options
+   * @param {(err?: Error, ok?: unknown) => void} callback
+   */
   function hashElement(name, dir, options, callback) {
     callback = arguments[arguments.length - 1];
 
@@ -58,11 +81,7 @@ function prep(fs) {
         options.skipMatching = true;
         return fs.promises
           .lstat(path.join(dir, basename))
-          .then(stats => {
-            stats.name = basename;
-            return stats;
-          })
-          .then(stats => hashElementPromise(stats, dir, options, true));
+          .then(stats => hashElementPromise(basename, stats, dir, options, true));
       })
       .then(result => {
         if (isFunction(callback)) {
@@ -82,13 +101,14 @@ function prep(fs) {
   }
 
   /**
-   * @param {fs.Stats} stats folder element, can also be of type fs.Dirent
+   * @param {string} name
+   * @param {import('node:fs').Stats} stats
    * @param {string} dirname
-   * @param {Options} options
+   * @param {InnerOptions} options
    * @param {boolean} isRootElement
+   * @returns {Promise<HashedElement>}
    */
-  function hashElementPromise(stats, dirname, options, isRootElement = false) {
-    const name = stats.name;
+  function hashElementPromise(name, stats, dirname, options, isRootElement = false) {
     let promise = undefined;
     if (stats.isDirectory()) {
       promise = hashFolderPromise(name, dirname, options, isRootElement);
@@ -101,16 +121,16 @@ function prep(fs) {
       return Promise.resolve({ name, hash: 'Error: unknown element type' });
     }
 
-    return promise.catch(err => {
+    return promise.catch((/** @type {{ code: string; }} */ err) => {
       if (err.code && (err.code === 'EMFILE' || err.code === 'ENFILE')) {
         log.queue(`queued ${dirname}/${name} because of ${err.code}`);
 
         const promise = new Promise((resolve, reject) => {
           queue.push(() => {
             log.queue(`Will processs queued ${dirname}/${name}`);
-            return hashElementPromise(stats, dirname, options, isRootElement)
-              .then(ok => resolve(ok))
-              .catch(err => reject(err));
+            return hashElementPromise(name, stats, dirname, options, isRootElement)
+              .then((/** @type {any} */ ok) => resolve(ok))
+              .catch((/** @type {any} */ err) => reject(err));
           });
         });
 
@@ -131,6 +151,12 @@ function prep(fs) {
     runnables.forEach(run => run());
   }
 
+  /**
+   * @param {string} name
+   * @param {string} dir
+   * @param {InnerOptions} options
+   * @returns {Promise<HashedFolder|undefined>}
+   */
   async function hashFolderPromise(name, dir, options, isRootElement = false) {
     const folderPath = path.join(dir, name);
     let ignoreBasenameOnce = options.ignoreBasenameOnce;
@@ -147,8 +173,12 @@ function prep(fs) {
     const files = await fs.promises.readdir(folderPath, { withFileTypes: true });
     const children = await Promise.all(
       files
-        .sort((a, b) => a.name.localeCompare(b.name))
-        .map(child => hashElementPromise(child, folderPath, options)),
+        .sort((/** @type {{ name: string; }} */ a, /** @type {{ name: any; }} */ b) =>
+          a.name.localeCompare(b.name),
+        )
+        .map((/** @type {any} */ child) =>
+          hashElementPromise(child.name, child, folderPath, options),
+        ),
     );
 
     if (ignoreBasenameOnce) options.ignoreBasenameOnce = true;
@@ -156,6 +186,12 @@ function prep(fs) {
     return hash;
   }
 
+  /**
+   * @param {string} name
+   * @param {string} dir
+   * @param {InnerOptions} options
+   * @returns {Promise<HashedFile|undefined>}
+   */
   function hashFilePromise(name, dir, options, isRootElement = false) {
     const filePath = path.join(dir, name);
 
@@ -182,7 +218,7 @@ function prep(fs) {
         }
 
         const f = fs.createReadStream(filePath);
-        f.on('error', err => {
+        f.on('error', (/** @type {any} */ err) => {
           reject(err);
         });
         f.pipe(hash, { end: false });
@@ -197,6 +233,14 @@ function prep(fs) {
     });
   }
 
+  /**
+   * @param {string} name
+   * @param {string} dir
+   * @param {InnerOptions} options
+   * @param {boolean} isRootElement
+   *
+   * @returns {Promise<HashedFile|undefined>}
+   */
   async function hashSymLinkPromise(name, dir, options, isRootElement = false) {
     const target = await fs.promises.readlink(path.join(dir, name));
     log.symlink(`handling symbolic link ${name} -> ${target}`);
@@ -212,6 +256,14 @@ function prep(fs) {
     }
   }
 
+  /**
+   * @param {string} name
+   * @param {crypto.BinaryLike} target
+   * @param {InnerOptions} options
+   * @param {boolean} isRootElement
+   *
+   * @returns {Promise<HashedFile>}
+   */
   function symLinkIgnoreTargetContent(name, target, options, isRootElement) {
     delete options.skipMatching; // only used for the root level
     log.symlink('ignoring symbolic link target content');
@@ -227,6 +279,15 @@ function prep(fs) {
     return Promise.resolve(new HashedFile(name, hash, options.encoding));
   }
 
+  /**
+   * @param {string} name
+   * @param {string} dir
+   * @param {crypto.BinaryLike} target
+   * @param {InnerOptions} options
+   * @param {boolean} isRootElement
+   *
+   * @returns {Promise<HashedFile>}
+   */
   async function symLinkResolve(name, dir, target, options, isRootElement) {
     delete options.skipMatching; // only used for the root level
     if (options.symbolicLinks.ignoreBasename) {
@@ -235,8 +296,7 @@ function prep(fs) {
 
     try {
       const stats = await fs.promises.stat(path.join(dir, name));
-      stats.name = name;
-      const temp = await hashElementPromise(stats, dir, options, isRootElement);
+      const temp = await hashElementPromise(name, stats, dir, options, isRootElement);
 
       if (!options.symbolicLinks.ignoreTargetPath) {
         const hash = crypto.createHash(options.algo, options.algoOptions);
@@ -248,7 +308,7 @@ function prep(fs) {
       return temp;
     } catch (err) {
       if (options.symbolicLinks.ignoreTargetContentAfterError) {
-        log.symlink(`Ignoring error "${err.code}" when hashing symbolic link ${name}`, err);
+        log.symlink(`Ignoring error when hashing symbolic link ${name}`, err);
         const hash = crypto.createHash(options.algo, options.algoOptions);
         if (
           !options.symbolicLinks.ignoreBasename &&
@@ -261,12 +321,17 @@ function prep(fs) {
         }
         return new HashedFile(name, hash, options.encoding);
       } else {
-        log.symlink(`Error "${err.code}": When hashing symbolic link ${name}`, err);
+        log.symlink(`Fatal error when hashing symbolic link ${name}`, err);
         throw err;
       }
     }
   }
 
+  /**
+   * @param {string} name
+   * @param {string} path
+   * @param {MatchRules} rules
+   */
   function ignore(name, path, rules) {
     if (rules.exclude) {
       if (rules.matchBasename && rules.exclude(name)) {
@@ -297,10 +362,14 @@ function prep(fs) {
   return hashElement;
 }
 
+/**
+ * @param {IArguments | Array<string|Options>} args
+ * @returns {Promise<ParsedArgs>}
+ */
 function parseParameters(args) {
   let basename = args[0],
     dir = args[1],
-    options_ = args[2];
+    options = args[2];
 
   if (!isString(basename)) {
     return Promise.reject(new TypeError('First argument must be a string'));
@@ -309,31 +378,61 @@ function parseParameters(args) {
   if (!isString(dir)) {
     dir = path.dirname(basename);
     basename = path.basename(basename);
-    options_ = args[1];
+    options = args[1];
   }
 
-  // parse options (fallback default options)
-  if (!isObject(options_)) options_ = {};
-  const options = {
-    algo: options_.algo || defaultOptions.algo,
-    algoOptions: options_.algoOptions || defaultOptions.algoOptions,
-    encoding: options_.encoding || defaultOptions.encoding,
-    files: Object.assign({}, defaultOptions.files, options_.files),
-    folders: Object.assign({}, defaultOptions.folders, options_.folders),
-    match: Object.assign({}, defaultOptions.match, options_.match),
-    symbolicLinks: Object.assign({}, defaultOptions.symbolicLinks, options_.symbolicLinks),
+  /** @type {Options} */
+  let combined;
+
+  if (options && typeof options === 'object') {
+    combined = {
+      algo: 'algo' in options ? options.algo : defaultOptions.algo,
+      algoOptions: 'algoOptions' in options ? options.algoOptions : defaultOptions.algoOptions,
+      encoding: 'encoding' in options ? options.encoding : defaultOptions.encoding,
+      // files: { ...structuredClone(defaultOptions.files), ...options.files },
+      files:
+        'files' in options
+          ? { ...structuredClone(defaultOptions.files), ...options.files }
+          : structuredClone(defaultOptions.files),
+      folders:
+        'folders' in options
+          ? { ...structuredClone(defaultOptions.folders), ...options.folders }
+          : structuredClone(defaultOptions.folders),
+      symbolicLinks: {
+        ...structuredClone(defaultOptions.symbolicLinks),
+        ...options.symbolicLinks,
+      },
+    };
+  } else {
+    combined = structuredClone(defaultOptions);
+  }
+
+  /** @type {InnerOptions} */
+  const inner = {
+    ...combined,
+    files: {
+      ...combined.files,
+      exclude: reduceGlobPatterns(combined.files.exclude, 'exclude files'),
+      include: reduceGlobPatterns(combined.files.include, 'include files'),
+    },
+    folders: {
+      ...combined.folders,
+      exclude: reduceGlobPatterns(combined.folders.exclude, 'exclude folders'),
+      include: reduceGlobPatterns(combined.folders.include, 'include folders'),
+    },
+    skipMatching: false,
+    ignoreBasenameOnce: false,
   };
 
-  // transform match globs to Regex
-  options.files.exclude = reduceGlobPatterns(options.files.exclude, 'exclude files');
-  options.files.include = reduceGlobPatterns(options.files.include, 'include files');
-  options.folders.exclude = reduceGlobPatterns(options.folders.exclude, 'exclude folders');
-  options.folders.include = reduceGlobPatterns(options.folders.include, 'include folders');
-
-  return Promise.resolve(log.params({ basename, dir, options }));
+  return Promise.resolve(log.params({ basename, dir, options: inner }));
 }
 
-const HashedFolder = function HashedFolder(name, children, options, isRootElement = false) {
+const HashedFolder = function HashedFolder(
+  /** @type {string} */ name,
+  /** @type {HashedElement[]} */ children,
+  /** @type {InnerOptions} */ options,
+  isRootElement = false,
+) {
   this.name = name;
   this.children = children;
 
@@ -348,7 +447,7 @@ const HashedFolder = function HashedFolder(name, children, options, isRootElemen
   } else {
     hash.update(name);
   }
-  children.forEach(child => {
+  children.forEach((/** @type {{ hash: crypto.BinaryLike; }} */ child) => {
     if (child.hash) {
       hash.update(child.hash);
     }
@@ -369,12 +468,20 @@ HashedFolder.prototype.childrenToString = function (padding = '') {
     return '[]';
   } else {
     const nextPadding = padding + '  ';
-    const children = this.children.map(child => child.toString(nextPadding)).join('\n');
+    const children = this.children
+      .map((/** @type {{ toString: (arg0: string) => any; }} */ child) =>
+        child.toString(nextPadding),
+      )
+      .join('\n');
     return `[\n${children}\n${padding}]`;
   }
 };
 
-const HashedFile = function HashedFile(name, hash, encoding) {
+const HashedFile = function HashedFile(
+  /** @type {string} */ name,
+  /** @type {crypto.Hash} */ hash,
+  /** @type {Encoding} */ encoding,
+) {
   this.name = name;
   this.hash = hash.digest(encoding);
 };
@@ -383,45 +490,65 @@ HashedFile.prototype.toString = function (padding = '') {
   return padding + "{ name: '" + this.name + "', hash: '" + this.hash + "' }";
 };
 
+/**
+ * @param {unknown} any
+ */
 function isFunction(any) {
   return typeof any === 'function';
 }
 
+/**
+ * @param {unknown} str
+ */
 function isString(str) {
-  return typeof str === 'string' || str instanceof String;
+  return typeof str === 'string';
 }
 
+/**
+ * @param {unknown} obj
+ */
 function isObject(obj) {
   return obj !== null && typeof obj === 'object';
 }
 
+/**
+ * @param {unknown} obj
+ */
 function notUndefined(obj) {
   return typeof obj !== 'undefined';
 }
 
+/**
+ * @param {RuleOption} globs
+ * @param {string} name
+ * @returns {RuleFn|undefined}
+ */
 function reduceGlobPatterns(globs, name) {
   if (isFunction(globs)) {
     log.glob(`Using function to ${name}`);
     return globs;
   } else if (!globs || !Array.isArray(globs) || globs.length === 0) {
+    log.glob(`Invalid glob pattern to ${name}`, { globs, typeof: typeof globs });
     return undefined;
   } else {
     // combine globs into one single RegEx
     const regex = new RegExp(
       globs
         .reduce((acc, exclude) => {
-          return acc + '|' + minimatch.makeRe(exclude).source;
+          const built = minimatch.makeRe(exclude);
+          if (!built) return acc;
+          else return acc + '|' + built.source;
         }, '')
         .substr(1),
     );
     log.glob(`Reduced glob patterns to ${name}`, { from: globs, to: regex });
-    return param => regex.test(param);
+    return (/** @type {string} */ param) => regex.test(param);
   }
 }
 
 module.exports = {
   defaults: defaultOptions,
-  hashElement: prep(require('fs')),
+  hashElement: prep(require('node:fs')),
   // exposed for testing
   prep,
   parseParameters,
