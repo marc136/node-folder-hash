@@ -1,8 +1,12 @@
 # Changelog
 
+## 4.1.1 (2025-01-07)
+- Re-add support for node>=10 #234
+
 ## 4.1.0 (2025-01-02)
 - Pass options to crypto.createHash from #217
 - Update dependencies
+- Known issue: Only works on node>=20 #234
 
 ## 4.0.4 (2023-01-11)
 - Fix #176 by removing `graceful-fs` from `cli.js`
