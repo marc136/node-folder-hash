@@ -64,7 +64,7 @@ function parseArgs(args) {
 }
 
 function error(err) {
-  console.error('ERROR:', ex.message || ex.name || ex);
+  console.error('ERROR:', err.message || err.name || err);
   process.exit(1);
 }
 
