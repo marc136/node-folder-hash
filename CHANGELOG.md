@@ -2,7 +2,7 @@
 
 ## 5.0.0 (unreleased)
 - Breaking change: Use `base64url` as default encoding #152
-- Breaking change: Drop support for node < 17.0
+- Breaking change: Drop support for node < 20.0 #235
 
 ## 4.1.1 (2025-01-07)
 - Re-add support for node>=10 #234

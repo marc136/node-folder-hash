@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "debug": "4.4.0",
-    "minimatch": "7.4.6"
+    "minimatch": "10.0.3"
   },
   "devDependencies": {
     "@types/debug": "4.1.12",
@@ -51,6 +51,6 @@
     "typescript": "5.7.2"
   },
   "engines": {
-    "node": ">=17.0.0"
+    "node": "20 || >=22"
   }
 }
