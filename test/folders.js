@@ -364,11 +364,11 @@ describe('Generating a hash over a folder, it', function () {
       files: { exclude: ['.*'] },
     };
 
-    return Promise.all([hashElement('abc', options), hashElement('def', options)]).then(function (
-      hashes,
-    ) {
-      return hashes[0].hash.should.equal(hashes[1].hash);
-    });
+    return Promise.all([hashElement('abc', options), hashElement('def', options)]).then(
+      function (hashes) {
+        return hashes[0].hash.should.equal(hashes[1].hash);
+      },
+    );
   });
 
   it('generates the same hash if the folders only differ in name and ignoreBasename is set', function () {
@@ -386,10 +386,10 @@ describe('Generating a hash over a folder, it', function () {
       files: { exclude: ['.*'] },
     };
 
-    return Promise.all([hashElement('abc', options), hashElement('def', options)]).then(function (
-      hashes,
-    ) {
-      return hashes[1].hash.should.equal(hashes[0].hash);
-    });
+    return Promise.all([hashElement('abc', options), hashElement('def', options)]).then(
+      function (hashes) {
+        return hashes[1].hash.should.equal(hashes[0].hash);
+      },
+    );
   });
 });
