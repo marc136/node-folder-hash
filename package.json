@@ -41,7 +41,7 @@
     "@types/debug": "4.1.12",
     "@types/node": "22.10.4",
     "chai": "4.5.0",
-    "chai-as-promised": "7.1.2",
+    "chai-as-promised": "8.0.2",
     "ignore": "7.0.5",
     "jsdoc": "4.0.4",
     "memfs": "3.5.3",
