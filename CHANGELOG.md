@@ -1,6 +1,7 @@
 # Changelog
 
 ## 5.0.0 (unreleased)
+- Breaking change: Convert to ESM
 - Breaking change: Use `base64url` as default encoding #152
 - Breaking change: Drop support for node < 20.0 #235
 

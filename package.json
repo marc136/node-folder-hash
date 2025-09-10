@@ -2,7 +2,12 @@
   "name": "folder-hash",
   "version": "5.0.0-dev",
   "description": "Create a hash checksum over a folder and its content - its children and their content",
-  "main": "index.js",
+  "type": "module",
+  "exports": {
+    ".": "./index.mjs",
+    "./cli": "./cli.mjs"
+  },
+  "main": "index.mjs",
   "bin": {
     "folder-hash": "bin/folder-hash"
   },
@@ -10,7 +15,7 @@
     "build": "tsc",
     "test": "mocha --reporter spec test",
     "cover": "nyc mocha test",
-    "format": "prettier --write *.js examples/ test/"
+    "format": "prettier --write *.mjs examples/ test/"
   },
   "author": {
     "name": "Marc Walter",

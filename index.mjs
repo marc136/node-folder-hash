@@ -1,7 +1,8 @@
-﻿const crypto = require('node:crypto'),
-  debug = require('debug'),
-  minimatch = require('minimatch'),
-  path = require('node:path');
+import * as crypto from 'node:crypto';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import debug from 'debug';
+import * as minimatch from 'minimatch';
 
 /**
  * @import {Encoding, HashedElement, Options, RuleFn, RuleOption} from './types/public';
@@ -56,7 +57,7 @@ const log = {
 /**
  * @param {typeof import("node:fs")} fs
  */
-function prep(fs) {
+export function prep(fs) {
   /**
    * @type {(() => any)[]}
    */
@@ -366,7 +367,7 @@ function prep(fs) {
  * @param {IArguments | Array<string|Options>} args
  * @returns {Promise<ParsedArgs>}
  */
-function parseParameters(args) {
+export function parseParameters(args) {
   let basename = args[0],
     dir = args[1],
     options = args[2];
@@ -546,10 +547,9 @@ function reduceGlobPatterns(globs, name) {
   }
 }
 
-module.exports = {
+export const hashElement = prep(fs);
+
+export default {
   defaults: defaultOptions,
-  hashElement: prep(require('node:fs')),
-  // exposed for testing
-  prep,
-  parseParameters,
+  hashElement,
 };

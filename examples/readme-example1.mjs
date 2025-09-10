@@ -1,7 +1,4 @@
-// execute from the base folder
-//  node examples\readme-example1.js
-
-const { hashElement } = require('../index.js');
+import { hashElement } from 'folder-hash';
 
 const options = {
   folders: { exclude: ['.*', 'node_modules', 'test_coverage'] },

@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "folder-hash": "file:..",
+    "ignore": "7.0.5"
+  }
+}

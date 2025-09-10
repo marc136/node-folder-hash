@@ -1,14 +1,13 @@
-﻿const crypto = require('crypto'),
-  path = require('path');
+import { hashElement } from 'folder-hash';
+import { getHashes } from 'node:crypto';
+import * as path from 'node:path';
 
-const hashFolder = require('../index.js');
+console.log(`Known hash algorithms:\n'${getHashes().join(`', '`)}'\n`);
 
-console.log(`Known hash algorithms:\n'${crypto.getHashes().join(`', '`)}'\n`);
-
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
 const dir = path.resolve(__dirname, '../');
 
-hashFolder
-  .hashElement('README.md', dir)
+hashElement('README.md', dir)
   .then(result => {
     console.log('\nCreated a hash over a single file:');
     console.log(result.toString());
@@ -17,7 +16,7 @@ hashFolder
     console.error(`\nPromise rejected due to:\n${reason}\n\n`);
   });
 
-hashFolder.hashElement(
+hashElement(
   dir,
   {
     files: { exclude: ['.*'], matchBasename: true },

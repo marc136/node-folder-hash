@@ -1,7 +1,7 @@
-const fs = require('fs');
-const lib = require('./index');
+import { readFileSync } from 'node:fs';
+import lib from './index.mjs';
 
-function program(cliArgs) {
+export default async function program(cliArgs) {
   let args;
   try {
     args = parseArgs(cliArgs);
@@ -17,7 +17,7 @@ function program(cliArgs) {
   let config;
   if (args.config) {
     try {
-      config = JSON.parse(fs.readFileSync(args.config, { encoding: 'utf-8' }));
+      config = JSON.parse(readFileSync(args.config, { encoding: 'utf-8' }));
     } catch (err) {
       console.error('Could not parse configuration from file ' + args.config);
       console.error('Maybe try a JSON config like this instead?\n');
@@ -26,7 +26,7 @@ function program(cliArgs) {
     }
   }
 
-  return lib
+  await lib
     .hashElement(args.src || process.cwd(), config)
     .then(result => console.log(result.toString()))
     .catch(error);
@@ -72,5 +72,3 @@ function printHelp() {
   console.log('Use folder-hash on cli like this:');
   console.log('  folder-hash [--config <json-file>] <file-or-folder>');
 }
-
-module.exports = program;

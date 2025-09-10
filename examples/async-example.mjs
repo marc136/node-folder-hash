@@ -1,5 +1,5 @@
-const { Volume } = require('memfs'),
-  prep = volume => require('../index').prep(volume, Promise);
+import { prep } from 'folder-hash';
+import { Volume } from 'memfs';
 
 const hashElement = prep(
   Volume.fromJSON({

@@ -6,7 +6,7 @@
  *  - if two files have the same content
  */
 
-const { hashElement } = require('../index');
+import { hashElement } from 'folder-hash';
 
 async function folder(f) {
   await hashElement(f, { folders: { ignoreRootName: false } }).then(hash => {
@@ -19,7 +19,7 @@ async function folder(f) {
 }
 
 async function file() {
-  const f = 'ignore-rootName.js';
+  const f = 'ignore-rootName.mjs';
   console.log('\n---\n');
 
   await hashElement(f, { files: { ignoreRootName: false } }).then(hash => {

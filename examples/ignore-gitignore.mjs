@@ -4,11 +4,11 @@
  * Real-life usage could be to exclude gitignored files
  */
 
-const { hashElement } = require('../index');
-const fs = require('fs');
-const ignore = require('ignore');
+import { hashElement } from 'folder-hash';
+import ignore from 'ignore';
+import { readFileSync } from 'node:fs';
 
-const gitignoreContents = fs.readFileSync('../.gitignore').toString().split('\n');
+const gitignoreContents = readFileSync('../.gitignore').toString().split('\n');
 const ig = ignore().add(gitignoreContents);
 
 function shouldExclude(name) {
