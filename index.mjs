@@ -508,13 +508,6 @@ function isString(str) {
 /**
  * @param {unknown} obj
  */
-function isObject(obj) {
-  return obj !== null && typeof obj === 'object';
-}
-
-/**
- * @param {unknown} obj
- */
 function notUndefined(obj) {
   return typeof obj !== 'undefined';
 }
