@@ -34,7 +34,7 @@
     "url": "https://github.com/marc136/node-folder-hash.git"
   },
   "dependencies": {
-    "debug": "4.4.0",
+    "debug": "4.4.1",
     "minimatch": "10.0.3"
   },
   "devDependencies": {
