@@ -13,8 +13,8 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "mocha --reporter spec test",
-    "cover": "nyc mocha test",
+    "test": "node --test",
+    "cover": "node --test --experimental-test-coverage --test-coverage-exclude=test/*.mjs",
     "format": "prettier --write *.mjs examples/ test/"
   },
   "author": {
@@ -33,13 +33,6 @@
     "type": "git",
     "url": "https://github.com/marc136/node-folder-hash.git"
   },
-  "nyc": {
-    "reporter": [
-      "lcov",
-      "text"
-    ],
-    "report-dir": "test_coverage"
-  },
   "dependencies": {
     "debug": "4.4.0",
     "minimatch": "10.0.3"
@@ -47,13 +40,8 @@
   "devDependencies": {
     "@types/debug": "4.1.12",
     "@types/node": "22.10.4",
-    "chai": "4.5.0",
-    "chai-as-promised": "7.1.2",
-    "ignore": "7.0.5",
     "jsdoc": "4.0.4",
     "memfs": "3.5.3",
-    "mocha": "11.7.2",
-    "nyc": "17.1.0",
     "prettier": "3.6.2",
     "typescript": "5.9.2"
   },
