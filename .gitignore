@@ -1,7 +1,8 @@
 node_modules
-sample-folder
-doc/**
 test_coverage/**
 .nyc_output
 .npmrc
-.idea
+
+# hide generated typescript definitions and source maps
+*.d.ts
+*.d.ts.map

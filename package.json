@@ -20,7 +20,9 @@
   "files": [
     "cli.js",
     "index.js",
-    "bin"
+    "bin",
+    "**/*.d.ts",
+    "**/*.d.ts.map"
   ],
   "repository": {
     "type": "git",
