@@ -533,7 +533,7 @@ function reduceGlobPatterns(globs, name) {
           if (!built) return acc;
           else return acc + '|' + built.source;
         }, '')
-        .substr(1),
+        .substring(1),
     );
     log.glob(`Reduced glob patterns to ${name}`, { from: globs, to: regex });
     return (/** @type {string} */ param) => regex.test(param);
