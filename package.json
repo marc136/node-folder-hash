@@ -40,7 +40,7 @@
   "devDependencies": {
     "@types/debug": "4.1.12",
     "@types/node": "22.10.4",
-    "jsdoc": "4.0.4",
+    "jsdoc": "4.0.5",
     "memfs": "3.5.3",
     "prettier": "3.6.2",
     "typescript": "5.9.2"
