@@ -34,9 +34,9 @@
     "report-dir": "test_coverage"
   },
   "dependencies": {
-    "debug": "^4.1.1",
+    "debug": "~4.3.1",
     "graceful-fs": "~4.2.0",
-    "minimatch": "~3.0.4"
+    "minimatch": "~3.1.5"
   },
   "devDependencies": {
     "chai": "^4.0.2",
