@@ -5,9 +5,9 @@ name: Test suite
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "v4", "v5" ]
   pull_request:
-    branches: [ "main", "ci" ]
+    branches: [ "main", "ci", "v4", "v5" ]
 
 jobs:
   test-linux:
@@ -15,8 +15,8 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [ 18.x, 20.x, 22.x, lts/*, latest ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+        node-version: [ 18.x, 20.x, 22.x, 24.x, lts/*, latest ]
 
     steps:
     - uses: actions/checkout@v4
@@ -35,8 +35,8 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [ lts/*, latest ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+        node-version: [ lts/*, latest ]
 
     steps:
     - uses: actions/checkout@v4
