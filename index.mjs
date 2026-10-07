@@ -167,7 +167,7 @@ export function prep(fs) {
       // this is currently only used for the root folder
       log.match(`skipped '${folderPath}'`);
       delete options.skipMatching;
-    } else if (ignore(name, folderPath, options.folders)) {
+    } else if (ignore(name, path.relative(options.basePath, folderPath), options.folders)) {
       return undefined;
     }
 
@@ -200,7 +200,7 @@ export function prep(fs) {
       // this is currently only used for the root folder
       log.match(`skipped '${filePath}'`);
       delete options.skipMatching;
-    } else if (ignore(name, filePath, options.files)) {
+    } else if (ignore(name, path.relative(options.basePath, filePath), options.files)) {
       return Promise.resolve(undefined);
     }
 
@@ -423,6 +423,7 @@ export function parseParameters(args) {
     },
     skipMatching: false,
     ignoreBasenameOnce: false,
+    basePath: path.join(dir, basename),
   };
 
   return Promise.resolve(log.params({ basename, dir, options: inner }));

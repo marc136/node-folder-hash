@@ -317,7 +317,7 @@ const options = {
             <td>
                 false
             </td>
-            <td>Match the glob patterns to the file/folder path</td>
+            <td>Match the glob patterns to the file/folder path, relative to the folder passed to hashElement</td>
         </tr>
         <tr>
             <td>ignoreBasename</td>

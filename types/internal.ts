@@ -11,6 +11,7 @@ export type InnerOptions = Omit<Options, 'files' | 'folders'> & {
   folders: MatchRules
   skipMatching?: boolean
   ignoreBasenameOnce?: boolean
+  basePath: string
 }
 
 export type MatchRules = {

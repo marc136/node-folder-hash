@@ -86,6 +86,56 @@ describe('Generating a hash over a folder, it', () => {
     await hashElement('../', 'abc/ghi/jkl', options).then(checkChildren);
   });
 
+  it('ignores base directory for purposes of exclude function', async () => {
+    const hashElement = prep(
+      Volume.fromJSON({
+        'abc/def': 'abc/def',
+        'abc/ghi/jkl/file.js': 'content',
+        'abc/ghi/jkl/file2.js': 'content',
+        'abc/ghi/folder/data.json': 'content',
+        'abc/ghi/folder/subfolder/today.log': 'content',
+      }),
+    );
+
+    const options = {
+      folders: {
+        exclude: ['jkl'],
+      },
+    };
+
+    const checkChildren = current => {
+      assert.strictEqual(current.children.length, 1, 'Should have one child');
+      assert.strictEqual(current.children[0].name, 'folder', 'Child name should be "folder"');
+    };
+
+    await hashElement('abc/ghi', options).then(checkChildren);
+  });
+
+  it('matches matchPath rules relative to the passed folder, regardless of the working directory', async () => {
+    const hashElement = prep(
+      Volume.fromJSON({
+        'abc/ghi/jkl/file.js': 'content',
+        'abc/ghi/folder/data.json': 'content',
+      }),
+    );
+
+    const options = {
+      folders: {
+        exclude: ['jkl'],
+        matchBasename: false,
+        matchPath: true,
+      },
+    };
+
+    const checkChildren = current => {
+      assert.strictEqual(current.children.length, 1, 'Should have one child');
+      assert.strictEqual(current.children[0].name, 'folder', 'Child name should be "folder"');
+    };
+
+    await hashElement('abc/ghi', options).then(checkChildren);
+    await hashElement('../', 'abc/ghi/jkl', options).then(checkChildren);
+  });
+
   it('generates different hashes if the folders have the same content but different names', async () => {
     const hashElement = prep(
       Volume.fromJSON({
