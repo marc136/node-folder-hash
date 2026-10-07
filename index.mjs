@@ -167,7 +167,7 @@ export function prep(fs) {
       // this is currently only used for the root folder
       log.match(`skipped '${folderPath}'`);
       delete options.skipMatching;
-    } else if (ignore(name, path.relative(options.basePath, folderPath), options.folders)) {
+    } else if (ignore(name, path.relative(options.basePath, folderPath), options.folders, true)) {
       return undefined;
     }
 
@@ -332,8 +332,9 @@ export function prep(fs) {
    * @param {string} name
    * @param {string} path
    * @param {MatchRules} rules
+   * @param {boolean} [isFolder=false]
    */
-  function ignore(name, path, rules) {
+  function ignore(name, path, rules, isFolder = false) {
     if (rules.exclude) {
       if (rules.matchBasename && rules.exclude(name)) {
         log.match(`exclude basename '${name}'`);
@@ -349,6 +350,9 @@ export function prep(fs) {
         return false;
       } else if (rules.matchPath && rules.include(path)) {
         log.match(`include path '${path}'`);
+        return false;
+      } else if (isFolder && rules.matchPath && isPartialMatch(path, rules.includePatterns)) {
+        log.match(`traverse '${path}' because it leads to an include path`);
         return false;
       } else {
         log.match(`include rule failed for path '${path}'`);
@@ -415,11 +419,13 @@ export function parseParameters(args) {
       ...combined.files,
       exclude: reduceGlobPatterns(combined.files.exclude, 'exclude files'),
       include: reduceGlobPatterns(combined.files.include, 'include files'),
+      includePatterns: includePatterns(combined.files.include),
     },
     folders: {
       ...combined.folders,
       exclude: reduceGlobPatterns(combined.folders.exclude, 'exclude folders'),
       include: reduceGlobPatterns(combined.folders.include, 'include folders'),
+      includePatterns: includePatterns(combined.folders.include),
     },
     skipMatching: false,
     ignoreBasenameOnce: false,
@@ -535,6 +541,40 @@ function reduceGlobPatterns(globs, name) {
     log.glob(`Using glob patterns to ${name}`, { from: globs });
     return (/** @type {string} */ param) => globs.some(glob => path.matchesGlob(param, glob));
   }
+}
+
+/**
+ * @param {RuleOption} globs
+ * @returns {string[]}
+ */
+function includePatterns(globs) {
+  return Array.isArray(globs) ? globs : [];
+}
+
+/**
+ * Checks if `relativePath` is the beginning of a path that one of the glob patterns can match,
+ * e.g. `src/app` for the pattern `src/app/entities/*.ts`.
+ * @param {string} relativePath
+ * @param {string[]} patterns
+ * @returns {boolean}
+ */
+function isPartialMatch(relativePath, patterns) {
+  const parts = relativePath.split(path.sep);
+  return patterns.some(pattern => isPartialSegmentMatch(parts, pattern.split('/')));
+}
+
+/**
+ * @param {string[]} parts
+ * @param {string[]} globs
+ * @returns {boolean}
+ */
+function isPartialSegmentMatch(parts, globs) {
+  if (parts.length === 0) return true;
+  if (globs.length === 0) return false;
+  if (globs[0] === '**') return true;
+  return (
+    path.matchesGlob(parts[0], globs[0]) && isPartialSegmentMatch(parts.slice(1), globs.slice(1))
+  );
 }
 
 export const hashElement = prep(fs);

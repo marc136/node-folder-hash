@@ -5,6 +5,7 @@
 - Breaking change: Drop support for node < 20.17.0 #235
 - Breaking change: Match glob patterns with `path.matchesGlob` and remove the `minimatch` dependency
 - Breaking change: Match `matchPath` rules relative to the folder passed to `hashElement`, so the result no longer depends on the working directory #201
+- Fix #157: With `matchPath`, folders that lead to a nested include path are traversed
 
 ## 5.0.0 (unreleased)
 - Breaking change: Use `base64url` as default encoding #152

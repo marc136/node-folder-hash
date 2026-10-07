@@ -136,6 +136,48 @@ describe('Generating a hash over a folder, it', () => {
     await hashElement('../', 'abc/ghi/jkl', options).then(checkChildren);
   });
 
+  it('traverses the parent folders of a nested include path when matchPath is set', async () => {
+    const hashElement = prep(
+      Volume.fromJSON({
+        'project/src/app/entities/user.entity.ts': 'content',
+        'project/src/app/entities/user.ts': 'content',
+        'project/src/app/other/order.entity.ts': 'content',
+        'project/src/lib/item.entity.ts': 'content',
+        'project/README.md': 'content',
+      }),
+    );
+
+    const nested = await hashElement('project', {
+      folders: { include: ['src/app/entities'], matchPath: true, matchBasename: false },
+      files: { include: ['*.entity.ts'] },
+    });
+    const explicit = await hashElement('project', {
+      folders: {
+        include: ['src', 'src/app', 'src/app/entities'],
+        matchPath: true,
+        matchBasename: false,
+      },
+      files: { include: ['*.entity.ts'] },
+    });
+
+    assert.deepStrictEqual(
+      nested.children.map(child => child.name),
+      ['src'],
+      'Should only contain the path to the include folder',
+    );
+    const app = nested.children[0].children[0];
+    assert.strictEqual(app.name, 'app');
+    assert.deepStrictEqual(
+      app.children.map(child => child.name),
+      ['entities'],
+    );
+    assert.deepStrictEqual(
+      app.children[0].children.map(child => child.name),
+      ['user.entity.ts'],
+    );
+    assert.strictEqual(nested.hash, explicit.hash, 'Hashes should be equal');
+  });
+
   it('generates different hashes if the folders have the same content but different names', async () => {
     const hashElement = prep(
       Volume.fromJSON({

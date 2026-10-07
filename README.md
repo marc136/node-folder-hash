@@ -291,7 +291,7 @@ const options = {
             <td>
                 []
             </td>
-            <td>Array of optional include glob patterns, see <a href="https://nodejs.org/api/path.html#pathmatchesglobpath-pattern">path.matchesGlob doc</a>. Can also be a function which returns true if the passed file is included.</td>
+            <td>Array of optional include glob patterns, see <a href="https://nodejs.org/api/path.html#pathmatchesglobpath-pattern">path.matchesGlob doc</a>. Can also be a function which returns true if the passed file is included. With <code>matchPath</code>, parent folders of a nested include pattern are traversed.</td>
         </tr>
         <tr>
             <td>matchBasename</td>

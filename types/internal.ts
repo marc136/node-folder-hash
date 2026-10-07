@@ -17,6 +17,7 @@ export type InnerOptions = Omit<Options, 'files' | 'folders'> & {
 export type MatchRules = {
   exclude: RuleFn | undefined
   include: RuleFn | undefined
+  includePatterns: string[]
   matchBasename: boolean
   matchPath: boolean
   ignoreBasename: boolean
