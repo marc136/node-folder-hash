@@ -1,5 +1,14 @@
 # Changelog
 
+## 4.1.4 (2026-10-07)
+- Update dependencies
+
+## 4.1.3 (2026-05-16)
+- Update dependencies
+
+## 4.1.2 (2026-03-05)
+- Update dependencies
+
 ## 4.1.1 (2025-01-07)
 - Re-add support for node>=10 #234
 
@@ -26,6 +35,18 @@
 - Breaking change: Allow combination of include and exclude rules #67
 - Breaking change: Drop support for node < 10.0
 - Add options to handle symbolic links see comment on #41
+
+## 3.3.4 (2026-03-12)
+- Update dependencies
+
+## 3.3.3 (2020-09-02)
+- Fix comma position in toString #74
+
+## 3.3.2 (2020-06-13)
+- Update dependencies
+
+## 3.3.1 (2020-02-05)
+- Update dependencies
 
 ## 3.3.0 (2019-10-07)
 - Add command line interface
