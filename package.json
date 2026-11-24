@@ -14,7 +14,7 @@
   "scripts": {
     "build": "tsc",
     "test": "node --test",
-    "cover": "node --test --experimental-test-coverage --test-coverage-exclude=test/*.mjs",
+    "cover": "node --test --experimental-test-coverage",
     "format": "prettier --write *.mjs examples/ test/"
   },
   "author": {
