@@ -280,12 +280,22 @@ describe('Generating a hash over a folder, it', () => {
       );
     }
 
-    const include1 = process.platform === 'win32' ? '*' : '**/*';
+    const included = await hashElement('base', {
+      folders: {
+        include: ['**/*'],
+        matchBasename: false,
+        matchPath: true,
+      },
+    });
+    assert.deepStrictEqual(
+      included.children.map(child => child.name),
+      ['file1', 'folder', 'folder2'],
+    );
 
     await verify({
       folders: {
         exclude: [path.join('**', 'folder')],
-        include: [include1],
+        include: '**/*',
         matchBasename: false,
         matchPath: true,
       },

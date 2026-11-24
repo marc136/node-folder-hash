@@ -278,7 +278,7 @@ const options = {
             <td>
                 []
             </td>
-            <td>Array of optional exclude glob patterns, see <a href="https://github.com/isaacs/minimatch#features">minimatch doc</a>. Can also be a function which returns true if the passed file is excluded.</td>
+            <td>Array of optional exclude glob patterns, see <a href="https://nodejs.org/api/path.html#pathmatchesglobpath-pattern">path.matchesGlob doc</a>. Can also be a function which returns true if the passed file is excluded.</td>
         </tr>
         <tr>
             <td>include</td>
@@ -291,7 +291,7 @@ const options = {
             <td>
                 []
             </td>
-            <td>Array of optional include glob patterns, see <a href="https://github.com/isaacs/minimatch#features">minimatch doc</a>. Can also be a function which returns true if the passed file is included.</td>
+            <td>Array of optional include glob patterns, see <a href="https://nodejs.org/api/path.html#pathmatchesglobpath-pattern">path.matchesGlob doc</a>. Can also be a function which returns true if the passed file is included.</td>
         </tr>
         <tr>
             <td>matchBasename</td>

@@ -3,6 +3,7 @@
 ## 6.0.0 (unreleased)
 - Breaking change: Convert to ESM
 - Breaking change: Drop support for node < 20.17.0 #235
+- Breaking change: Match glob patterns with `path.matchesGlob` and remove the `minimatch` dependency
 
 ## 5.0.0 (unreleased)
 - Breaking change: Use `base64url` as default encoding #152

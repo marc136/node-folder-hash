@@ -2,7 +2,6 @@ import * as crypto from 'node:crypto';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import debug from 'debug';
-import * as minimatch from 'minimatch';
 
 /**
  * @import {Encoding, HashedElement, Options, RuleFn, RuleOption} from './types/public';
@@ -72,6 +71,7 @@ export function prep(fs) {
    * @param {string} dir
    * @param {Options} options
    * @param {(err?: Error, ok?: unknown) => void} callback
+   * @returns {Promise<void | HashedElement>}
    */
   function hashElement(name, dir, options, callback) {
     callback = arguments[arguments.length - 1];
@@ -525,18 +525,8 @@ function reduceGlobPatterns(globs, name) {
     log.glob(`Invalid glob pattern to ${name}`, { globs, typeof: typeof globs });
     return undefined;
   } else {
-    // combine globs into one single RegEx
-    const regex = new RegExp(
-      globs
-        .reduce((acc, exclude) => {
-          const built = minimatch.makeRe(exclude);
-          if (!built) return acc;
-          else return acc + '|' + built.source;
-        }, '')
-        .substring(1),
-    );
-    log.glob(`Reduced glob patterns to ${name}`, { from: globs, to: regex });
-    return (/** @type {string} */ param) => regex.test(param);
+    log.glob(`Using glob patterns to ${name}`, { from: globs });
+    return (/** @type {string} */ param) => globs.some(glob => path.matchesGlob(param, glob));
   }
 }
 
