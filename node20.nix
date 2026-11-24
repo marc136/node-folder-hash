@@ -1,13 +1,13 @@
 let
   nodePkgs = import (fetchTarball {
-    url = "https://github.com/NixOS/nixpkgs/archive/55070e598e0e03d1d116c49b9eff322ef07c6ac6.tar.gz";
+    url = "https://github.com/NixOS/nixpkgs/archive/b6018f87da91d19d0ab4cf979885689b469cdd41.tar.gz";
   }) { };
 in
 { pkgs ? import <nixpkgs> {} }:
 
 pkgs.mkShell {
   buildInputs = [
-    nodePkgs.nodejs-14_x
+    nodePkgs.nodejs_20
   ];
 
   shellHook = ''
