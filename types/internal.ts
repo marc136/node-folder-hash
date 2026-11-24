@@ -1,4 +1,4 @@
-import type { Options, RuleFn } from './public'
+import type { Options, RuleFn } from './public.ts'
 
 export type ParsedArgs = {
   basename: string

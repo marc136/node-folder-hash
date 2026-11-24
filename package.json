@@ -42,7 +42,7 @@
     "jsdoc": "4.0.5",
     "memfs": "3.5.3",
     "prettier": "3.10.1",
-    "typescript": "5.9.2"
+    "typescript": "7.0.2"
   },
   "engines": {
     "node": ">=20.17.0 || >=22.5.0"

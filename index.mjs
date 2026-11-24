@@ -43,7 +43,7 @@ const defaultOptions = {
 // Use the environment variable DEBUG to log output, e.g. `set DEBUG=fhash:*`
 const log = {
   match: debug('fhash:match'),
-  params: (/** @type {any} */ params) => {
+  params: (/** @type {ParsedArgs} */ params) => {
     debug('fhash:parameters')(params);
     return params;
   },
@@ -58,7 +58,7 @@ const log = {
  */
 export function prep(fs) {
   /**
-   * @type {(() => any)[]}
+   * @type {(() => void)[]}
    */
   let queue = [];
   /**
@@ -103,7 +103,7 @@ export function prep(fs) {
 
   /**
    * @param {string} name
-   * @param {import('node:fs').Stats} stats
+   * @param {import('node:fs').Stats | import('node:fs').Dirent} stats
    * @param {string} dirname
    * @param {InnerOptions} options
    * @param {boolean} isRootElement
@@ -130,8 +130,8 @@ export function prep(fs) {
           queue.push(() => {
             log.queue(`Will processs queued ${dirname}/${name}`);
             return hashElementPromise(name, stats, dirname, options, isRootElement)
-              .then((/** @type {any} */ ok) => resolve(ok))
-              .catch((/** @type {any} */ err) => reject(err));
+              .then(ok => resolve(ok))
+              .catch((/** @type {unknown} */ err) => reject(err));
           });
         });
 
@@ -174,10 +174,10 @@ export function prep(fs) {
     const files = await fs.promises.readdir(folderPath, { withFileTypes: true });
     const children = await Promise.all(
       files
-        .sort((/** @type {{ name: string; }} */ a, /** @type {{ name: any; }} */ b) =>
+        .sort((/** @type {{ name: string; }} */ a, /** @type {{ name: string; }} */ b) =>
           a.name.localeCompare(b.name),
         )
-        .map((/** @type {any} */ child) =>
+        .map((/** @type {import('node:fs').Dirent} */ child) =>
           hashElementPromise(child.name, child, folderPath, options),
         ),
     );
@@ -219,7 +219,7 @@ export function prep(fs) {
         }
 
         const f = fs.createReadStream(filePath);
-        f.on('error', (/** @type {any} */ err) => {
+        f.on('error', (/** @type {Error} */ err) => {
           reject(err);
         });
         f.pipe(hash, { end: false });
@@ -428,68 +428,74 @@ export function parseParameters(args) {
   return Promise.resolve(log.params({ basename, dir, options: inner }));
 }
 
-const HashedFolder = function HashedFolder(
-  /** @type {string} */ name,
-  /** @type {HashedElement[]} */ children,
-  /** @type {InnerOptions} */ options,
-  isRootElement = false,
-) {
-  this.name = name;
-  this.children = children;
+class HashedFolder {
+  /**
+   * @param {string} name
+   * @param {HashedElement[]} children
+   * @param {InnerOptions} options
+   * @param {boolean} [isRootElement=false]
+   */
+  constructor(name, children, options, isRootElement = false) {
+    this.name = name;
+    this.children = children;
 
-  const hash = crypto.createHash(options.algo, options.algoOptions);
-  if (
-    options.folders.ignoreBasename ||
-    options.ignoreBasenameOnce ||
-    (isRootElement && options.folders.ignoreRootName)
-  ) {
-    delete options.ignoreBasenameOnce;
-    log.match(`omitted name of folder ${name} from hash`);
-  } else {
-    hash.update(name);
-  }
-  children.forEach((/** @type {{ hash: crypto.BinaryLike; }} */ child) => {
-    if (child.hash) {
-      hash.update(child.hash);
+    const hash = crypto.createHash(options.algo, options.algoOptions);
+    if (
+      options.folders.ignoreBasename ||
+      options.ignoreBasenameOnce ||
+      (isRootElement && options.folders.ignoreRootName)
+    ) {
+      delete options.ignoreBasenameOnce;
+      log.match(`omitted name of folder ${name} from hash`);
+    } else {
+      hash.update(name);
     }
-  });
+    children.forEach((/** @type {{ hash: crypto.BinaryLike; }} */ child) => {
+      if (child.hash) {
+        hash.update(child.hash);
+      }
+    });
 
-  this.hash = hash.digest(options.encoding);
-};
-
-HashedFolder.prototype.toString = function (padding = '') {
-  const first = `${padding}{ name: '${this.name}', hash: '${this.hash}',\n`;
-  padding += '  ';
-
-  return `${first}${padding}children: ${this.childrenToString(padding)}}`;
-};
-
-HashedFolder.prototype.childrenToString = function (padding = '') {
-  if (this.children.length === 0) {
-    return '[]';
-  } else {
-    const nextPadding = padding + '  ';
-    const children = this.children
-      .map((/** @type {{ toString: (arg0: string) => any; }} */ child) =>
-        child.toString(nextPadding),
-      )
-      .join('\n');
-    return `[\n${children}\n${padding}]`;
+    this.hash = hash.digest(options.encoding);
   }
-};
 
-const HashedFile = function HashedFile(
-  /** @type {string} */ name,
-  /** @type {crypto.Hash} */ hash,
-  /** @type {Encoding} */ encoding,
-) {
-  this.name = name;
-  this.hash = hash.digest(encoding);
-};
+  toString(padding = '') {
+    const first = `${padding}{ name: '${this.name}', hash: '${this.hash}',\n`;
+    padding += '  ';
 
-HashedFile.prototype.toString = function (padding = '') {
-  return padding + "{ name: '" + this.name + "', hash: '" + this.hash + "' }";
-};
+    return `${first}${padding}children: ${this.childrenToString(padding)}}`;
+  }
+
+  childrenToString(padding = '') {
+    if (this.children.length === 0) {
+      return '[]';
+    } else {
+      const nextPadding = padding + '  ';
+      const children = this.children
+        .map((/** @type {{ toString: (arg: string) => string; }} */ child) =>
+          child.toString(nextPadding),
+        )
+        .join('\n');
+      return `[\n${children}\n${padding}]`;
+    }
+  }
+}
+
+class HashedFile {
+  /**
+   * @param {string} name
+   * @param {crypto.Hash} hash
+   * @param {Encoding} encoding
+   */
+  constructor(name, hash, encoding) {
+    this.name = name;
+    this.hash = hash.digest(encoding);
+  }
+
+  toString(padding = '') {
+    return padding + "{ name: '" + this.name + "', hash: '" + this.hash + "' }";
+  }
+}
 
 /**
  * @param {unknown} any
