@@ -34,14 +34,14 @@
     "url": "https://github.com/marc136/node-folder-hash.git"
   },
   "dependencies": {
-    "debug": "4.4.0"
+    "debug": "4.4.3"
   },
   "devDependencies": {
-    "@types/debug": "4.1.12",
+    "@types/debug": "4.1.13",
     "@types/node": "22.10.4",
-    "jsdoc": "4.0.4",
+    "jsdoc": "4.0.5",
     "memfs": "3.5.3",
-    "prettier": "3.6.2",
+    "prettier": "3.10.1",
     "typescript": "5.9.2"
   },
   "engines": {
